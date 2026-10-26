@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8f5">
+  <meta name="description" content="Lộ trình học hai notebook AI-NLP trong ba ngày, có giải thích code và bài tập tương tác.">
+  <title>AI-NLP — Từ chạy được đến tự viết lại được</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="lessons.js" defer></script>
+  <script src="presentation.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#ngay-1" aria-label="Về ngày 1">
+      <span class="brand-mark">N</span>
+      <span>HỌC AI · NLP <small>lộ trình 3 ngày</small></span>
+    </a>
+    <div class="top-progress" aria-live="polite">
+      <span id="progress-label">0/3 ngày hoàn thành</span>
+      <span class="progress-track"><span id="progress-fill"></span></span>
+    </div>
+    <span class="runtime-pill" id="runtime-pill" aria-live="polite"><i></i><span>Python chưa tải</span></span>
+  </header>
+  <div class="runtime-notice" id="runtime-notice"><span><b>Trình chạy Python:</b> chỉ tải khi bạn bấm Chạy; cần kết nối Internet và trang HTTPS để mở Worker.</span><button type="button" id="dismiss-runtime-note" aria-label="Ẩn thông báo">×</button></div>
+
+  <div class="layout">
+    <aside class="sidebar" aria-label="Điều hướng lộ trình">
+      <p class="eyebrow side-label">LỘ TRÌNH</p>
+      <nav class="day-nav">
+        <button class="day-tab active" data-day="1" type="button"><span class="tab-number">01</span><span><b>Nền tảng & cảm xúc</b><small>Token · stem · từ khóa</small></span><span class="done-dot" aria-hidden="true">✓</span></button>
+        <button class="day-tab" data-day="2" type="button"><span class="tab-number">02</span><span><b>Biến chữ thành số</b><small>Spam · BoW · chia dữ liệu</small></span><span class="done-dot" aria-hidden="true">✓</span></button>
+        <button class="day-tab" data-day="3" type="button"><span class="tab-number">03</span><span><b>Học & dự đoán</b><small>Naive Bayes · đánh giá</small></span><span class="done-dot" aria-hidden="true">✓</span></button>
+      </nav>
+      <button class="presentation-launch" id="open-presentation" type="button"><span aria-hidden="true">▶</span> Học bằng slide tư duy code</button>
+      <div class="sidebar-note">
+        <span class="note-icon">✳</span>
+        <p><b>Cách học</b><br>Đọc một ý, tự đoán kết quả, rồi mới mở lời giải. Không cần học thuộc thuật ngữ.</p>
+      </div>
+      <div class="sidebar-note source-note"><span class="note-icon">⌁</span><p><b>Code bám sát bài gốc</b><br>Notebook/PDF gốc được đọc để soạn bài, nhưng không nằm trong gói triển khai website.</p></div>
+    </aside>
+
+    <main id="main-content">
+      <section class="day-panel active" id="ngay-1" data-panel="1">
+        <div class="day-hero hero-olive">
+          <div class="hero-copy">
+            <p class="eyebrow">NGÀY 01 · KHOẢNG 2–3 GIỜ</p>
+            <h1>Từ câu chữ<br>đến cảm xúc</h1>
+            <p class="hero-lede">Ta sẽ lần theo notebook đầu tiên: máy chia câu ra sao, vì sao có từ bị bỏ, và bộ đếm từ khóa quyết định nhãn thế nào.</p>
+            <div class="hero-tags"><span>Không cần biết NLP trước</span><span>Notebook: Sentiment Basic</span></div>
+          </div>
+          <div class="hero-art" aria-hidden="true"><span class="art-orbit orbit-one"></span><span class="art-orbit orbit-two"></span><span class="art-word">good<br><i>?</i></span><span class="art-chip chip-a">tokens</span><span class="art-chip chip-b">label</span><span class="art-chip chip-c">♥</span></div>
+        </div>
+
+        <div class="lesson-body">
+          <div class="callout callout-warm"><span class="callout-icon">↗</span><p><b>Bạn không “mất gốc”.</b> Notebook nén nhiều khái niệm mới vào vài dòng Python. Trong ba ngày này, ta sẽ mở từng lớp: câu chữ → đặc trưng → quyết định.</p></div>
+
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">01</span><div><p class="eyebrow">TRƯỚC KHI ĐỌC CODE</p><h2>Hình dung bài toán trước</h2></div></div>
+            <p class="section-intro">Máy tính không “cảm” được câu <em>I love this movie</em>. Nó cần một cách biểu diễn để làm phép tính. Bài đầu tiên dùng luật rất dễ nhìn: xử lý câu, đếm từ trong hai danh sách, rồi chọn nhãn có điểm cao hơn.</p>
+            <div class="flow-row" aria-label="Luồng phân tích cảm xúc"><div class="flow-card"><span>01</span><b>Câu thô</b><small>“I loved this movie!”</small></div><i>→</i><div class="flow-card"><span>02</span><b>Token</b><small>tách thành từ</small></div><i>→</i><div class="flow-card"><span>03</span><b>Chuẩn hóa</b><small>bỏ từ / rút gọn</small></div><i>→</i><div class="flow-card"><span>04</span><b>Đếm từ khóa</b><small>tích cực hay tiêu cực?</small></div></div>
+            <div class="two-col concept-grid">
+              <article class="info-card"><span class="mini-icon">⌘</span><h3>NLP là gì?</h3><p>NLP là lĩnh vực giúp máy tính xử lý ngôn ngữ con người. Ở đây, ta đang làm <b>phân loại văn bản</b>: nhận một câu và gán nhãn cảm xúc.</p></article>
+              <article class="info-card"><span class="mini-icon">≋</span><h3>Tiền xử lý để làm gì?</h3><p>Đưa các cách viết gần nhau về dạng dễ so sánh. Bước xử lý phải hợp bài toán: chuẩn hóa quá mạnh có thể làm mất nghĩa, đặc biệt là từ phủ định.</p></article>
+            </div>
+            <div class="note-box"><b>Phân biệt nhanh:</b> AI là phạm vi rộng; Machine Learning (ML) học quy luật từ dữ liệu; Deep Learning (DL) là nhóm ML dùng mạng nơ-ron nhiều lớp; NLP là bài toán/lĩnh vực xử lý ngôn ngữ và có thể dùng luật, ML hoặc DL. Bài cảm xúc đầu tiên là luật từ khóa viết tay; bài spam dùng ML với Naive Bayes.</div>
+            <div class="beginner-map"><b>Bản đồ code:</b><span><code>giá trị</code> là dữ liệu</span><i>→</i><span><code>biến</code> đặt tên dữ liệu</span><i>→</i><span><code>hàm</code> gom thao tác</span><i>→</i><span><code>pipeline</code> nối thao tác</span></div>
+          </section>
+
+          <section class="lesson-section python-foundation">
+            <div class="section-heading"><span class="section-index">PY</span><div><p class="eyebrow">NỀN PYTHON · HỌC TRƯỚC KHI GẶP NLP</p><h2>Code là chỉ dẫn cho máy, không phải phép màu</h2></div></div>
+            <p class="section-intro">Mình giả sử bạn chưa biết cú pháp Python. Bắt đầu bằng dữ liệu và biến, sau đó giữ nhiều giá trị trong danh sách, đi qua chúng, ra quyết định và gom thao tác thành hàm.</p>
+            <div class="syntax-guide"><div><code>=</code><span>gán tên</span><small>đặt giá trị vào biến</small></div><div><code>()</code><span>gọi hàm</span><small>đưa dữ liệu vào thao tác</small></div><div><code>[]</code><span>danh sách / vị trí</span><small>giữ nhiều phần tử</small></div><div><code>:</code><span>bắt đầu khối</span><small>dòng sau phải thụt lề</small></div><div><code>import</code><span>nạp thư viện</span><small>dùng công cụ đã cài</small></div></div>
+            <div class="mini-lesson"><b>Cách đọc từng dòng:</b> tìm tên → xem kiểu dữ liệu → xác định phép biến đổi → tự nói kết quả bằng tiếng Việt. Sau đó hỏi: “nếu bỏ dòng này, bước nào không còn làm được?”</div>
+            <div class="python-lab-list" data-lab-group="day1-foundations"></div>
+          </section>
+
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">02</span><div><p class="eyebrow">CELL 0 · CHUẨN BỊ CÔNG CỤ</p><h2>Import không phải là phép màu</h2></div></div>
+            <pre class="code-block"><code>import spacy
+import nltk
+from nltk.stem import PorterStemmer
+from nltk.corpus import stopwords
+nltk.download('punkt')
+nltk.download('stopwords')
+
+nlp = spacy.load("en_core_web_sm")
+stemmer = PorterStemmer()
+stop_words = set(stopwords.words('english'))</code></pre>
+            <div class="line-notes">
+              <p><code>import spacy</code>, <code>import nltk</code> nạp hai thư viện; SpaCy và NLTK có sẵn công cụ xử lý chữ.</p>
+              <p><code>from ... import PorterStemmer</code> lấy riêng bộ rút gọn từ; <code>stopwords</code> lấy danh sách từ phổ biến.</p>
+              <p><code>nltk.download(...)</code> tải dữ liệu NLTK cần dùng. <code>punkt</code> không được dùng trong đường tokenization SpaCy ở cell này; tải xuống không có nghĩa là mọi dòng sau đều cần nó.</p>
+              <p><code>spacy.load("en_core_web_sm")</code> nạp mô hình tiếng Anh đã cài sẵn. Nếu chưa cài model, lệnh này có thể báo lỗi dù đã cài thư viện spaCy.</p>
+              <p><code>PorterStemmer()</code> tạo bộ stemmer. <code>set(...)</code> đổi danh sách stop words thành tập hợp để tra cứu nhanh hơn.</p>
+            </div>
+            <details class="hint"><summary>Vì sao có dấu chấm trong <code>token.text</code> nhưng không cần hiểu cú pháp này ngay?</summary><p>Dấu chấm truy cập thuộc tính của một đối tượng. <code>token</code> là đối tượng từ SpaCy; <code>.text</code> lấy chuỗi chữ bên trong nó. Tương tự <code>token.lemma_</code> sẽ lấy dạng từ điển.</p></details>
+            <div class="note-box"><b>Về cài đặt:</b> <code>import</code> chỉ nạp thư viện đã cài, còn <code>spacy.load</code> cần model <code>en_core_web_sm</code> đã có trong môi trường. NLTK stop words ở đây là tiếng Anh; đổi sang văn bản tiếng Việt cần tokenizer và tài nguyên phù hợp cho tiếng Việt.</div>
+          </section>
+
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">03</span><div><p class="eyebrow">CELL 1–3 · TOKENIZATION & STEMMING</p><h2>Một câu được chia nhỏ ra sao?</h2></div></div>
+            <p class="section-intro"><b>Tokenization</b> là chia văn bản thành đơn vị nhỏ (thường là từ và dấu câu). Sau đó ta có thể lọc từng đơn vị thay vì phải xử lý cả câu như một khối.</p>
+            <pre class="code-block"><code>doc = nlp("I love this movie and will watch it again")
+tokens = [token.text for token in doc]
+print(tokens)
+# ['I', 'love', 'this', 'movie', 'and', 'will', 'watch', 'it', 'again']</code></pre>
+            <div class="explain-strip"><span class="strip-label">Đọc từ trong ra ngoài</span><p><code>nlp(câu)</code> tạo tài liệu đã được SpaCy phân tích → vòng <code>for</code> đi qua từng token → <code>token.text</code> lấy chữ → ngoặc vuông tạo danh sách mới.</p></div>
+            <h3 class="subhead">Hàm tiền xử lý của notebook</h3>
+            <pre class="code-block"><code>def preprocess_text(sentence):
+    doc = nlp(sentence)
+    tokens = [token.text for token in doc]
+    filtered_tokens = [token for token in tokens
+                       if token.lower() not in stop_words]
+    stemmed_tokens = [stemmer.stem(token)
+                      for token in filtered_tokens]
+    return stemmed_tokens</code></pre>
+            <div class="line-notes">
+              <p><code>def preprocess_text(sentence):</code> định nghĩa hàm nhận một câu; câu này là đầu vào tên <code>sentence</code>.</p>
+              <p><code>doc = nlp(sentence)</code> chuyển câu thành đối tượng SpaCy chứa các token.</p>
+              <p><code>tokens = [...]</code> tạo danh sách chuỗi. Mỗi vòng lặp lấy một <code>token.text</code>.</p>
+              <p><code>token.lower()</code> chuyển token về chữ thường trước khi so sánh; nhờ vậy <code>The</code> và <code>the</code> được coi giống nhau.</p>
+              <p><code>not in stop_words</code> giữ token nếu nó không nằm trong danh sách từ phổ biến. Kết quả là <code>filtered_tokens</code>.</p>
+              <p><code>stemmer.stem(token)</code> cắt/biến đổi từ theo quy tắc của Porter Stemmer; danh sách mới tên <code>stemmed_tokens</code>.</p>
+              <p><code>return</code> gửi danh sách đã xử lý về nơi gọi hàm. Nếu không có <code>return</code>, nơi gọi không nhận được danh sách này.</p>
+            </div>
+            <div class="why-banner"><b>Vì sao phải tách câu?</b><p>Ta cần kiểm tra riêng từng từ: từ nào cần giữ, từ nào cần đổi dạng. Nếu không tạo token, các bước sau chỉ nhìn thấy một chuỗi lớn và không thể đếm từng từ khóa.</p></div>
+            <div class="python-lab-list" data-lab-group="day1-nlp"></div>
+            <div class="example-panel"><div><p class="eyebrow">THEO DÕI DỮ LIỆU QUA TỪNG BƯỚC</p><h3>“I love this movie and will watch it again”</h3></div><ol class="transform-steps"><li><span>Câu thô</span><code>I love this movie and will watch it again</code></li><li><span>Token</span><code>[I, love, this, movie, and, will, watch, it, again]</code></li><li><span>Bỏ stop words</span><code>[love, movie, watch]</code></li><li><span>Stemming</span><code>[love, movi, watch]</code></li></ol><p class="fine-print">“movi” là stem do Porter tạo ra, không phải lỗi chính tả trong dữ liệu. Stem có thể không phải từ tiếng Anh hoàn chỉnh.</p></div>
+            <div class="two-col term-grid"><article class="term-card"><h3>Stemming</h3><p>Rút gọn theo quy tắc hình thức; ví dụ <code>loved → love</code>, <code>movie → movi</code>. Nhanh, nhưng đôi khi tạo ra chuỗi không phải từ.</p></article><article class="term-card"><h3>Lemmatization</h3><p>Dùng thông tin ngôn ngữ để đưa từ về dạng từ điển; ví dụ <code>better → good</code> trong ngữ cảnh phù hợp. Có ý nghĩa hơn nhưng cần mô hình/ngữ cảnh tốt.</p></article></div>
+            <div class="note-box note-caution"><b>Chú ý phủ định:</b> stop words tiếng Anh thường có <code>not</code>. Nếu bỏ nó, “not good” có thể còn lại “good” và bị hiểu sai. Đừng xóa stop words theo thói quen; hãy kiểm tra xem từ bị xóa có mang ý nghĩa cho bài toán không.</div>
+          </section>
+
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">04</span><div><p class="eyebrow">CELL 4–8 · PHÂN LOẠI CẢM XÚC</p><h2>Máy đang học hay chỉ đang làm theo luật?</h2></div></div>
+            <p class="section-intro">Notebook tạo hai danh sách từ khóa do con người viết. Mỗi từ đã tiền xử lý được so với hai danh sách; nhãn nào khớp nhiều hơn sẽ được trả về. Đây là bộ phân loại theo luật, chưa phải mô hình được huấn luyện từ dữ liệu.</p>
+            <pre class="code-block"><code>def analyze_sentiment(sentence):
+    processed_tokens = preprocess_text(sentence)
+    positive_vocab = ["love", "great", "excel", "well", "happi"]
+    negative_vocab = ["hate", "bad", "terribl", "sad", "bore"]
+    pos_count = sum(1 for token in processed_tokens
+                    if token in positive_vocab)
+    neg_count = sum(1 for token in processed_tokens
+                    if token in negative_vocab)
+    if pos_count &gt; neg_count:
+        return "Tích cực"
+    elif neg_count &gt; pos_count:
+        return "Tiêu cực"
+    else:
+        return "Trung tính"</code></pre>
+            <div class="line-notes">
+              <p><code>processed_tokens = ...</code> gọi hàm đã học ở trên; đầu ra của nó là danh sách stem.</p>
+              <p><code>positive_vocab</code> và <code>negative_vocab</code> là “từ điển cảm xúc” viết thủ công. Các mục như <code>excel</code>, <code>terribl</code> đã được stem để cùng dạng với đầu ra xử lý.</p>
+              <p><code>sum(1 for ... if ...)</code> tạo số 1 cho mỗi token khớp, rồi cộng lại. <code>pos_count</code> và <code>neg_count</code> là điểm đơn giản.</p>
+              <p>Ba nhánh <code>if / elif / else</code> so sánh điểm. Bằng điểm (kể cả cả hai đều 0) thì trả “Trung tính”.</p>
+            </div>
+            <div class="score-demo"><div><span class="score-title">Ví dụ: “I loved this movie and will watch it again”</span><small>Sau tiền xử lý: <code>[love, movi, watch]</code></small></div><div class="score-bars"><div><span>Tích cực</span><b class="bar-positive" style="--score: 100%"><i></i></b><strong>1</strong></div><div><span>Tiêu cực</span><b class="bar-negative" style="--score: 0%"><i></i></b><strong>0</strong></div></div><div class="score-result">Kết quả: <b>Tích cực</b></div></div>
+            <details class="hint"><summary>Vì sao ví dụ “better than the previous one” gây rối?</summary><p>Ở phiên bản stemmer đầu tiên, <code>better</code> không khớp từ tích cực nào nên kết quả theo đúng code là “Trung tính”. Cell có comment nói “Tích cực” nhưng output lưu trong notebook lại là “Trung tính”. Ở phiên bản lemmatization, <code>better</code> có thể thành <code>good</code>, nhưng danh sách tích cực của cell đó vẫn chưa có <code>good</code>; output “Tích cực” có thể là output cũ từ lần chạy khác. Hãy ưu tiên lần theo code hiện tại, rồi chạy lại từ đầu để kiểm tra.</p></details>
+            <div class="note-box"><b>Hai phiên bản tiền xử lý trong notebook:</b> cell 2 dùng SpaCy tokenize + NLTK stop words + Porter stemming. cell 7 đổi sang SpaCy <code>token.lemma_</code>. Hai cách không thể thay thế máy móc vì từ đầu ra khác nhau, nên danh sách từ khóa cũng phải được đồng bộ. <code>from numpy import positive</code> trong cell 4 không được dùng.</div>
+            <details class="hint"><summary>Mở cell 7: phiên bản lemmatization trong notebook</summary><pre class="code-block"><code>nlp = spacy.load("en_core_web_sm")
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
+
+def preprocess_text(sentence):
+    doc = nlp(sentence)
+    tokens = [token for token in doc]
+    filtered_tokens = [token for token in tokens
+                       if token.text.lower() not in stop_words]
+    lemmas = [token.lemma_ for token in filtered_tokens]
+    return lemmas</code></pre><div class="line-notes"><p><code>tokens = [token for token in doc]</code> giữ nguyên đối tượng Token SpaCy thay vì đổi thành chuỗi ngay.</p><p><code>token.text.lower()</code> lấy chữ thường để kiểm tra stop words; sau đó list comprehension vẫn giữ Token ban đầu để lấy ngữ cảnh.</p><p><code>token.lemma_</code> lấy dạng từ điển của mỗi Token; dấu gạch dưới là cách SpaCy phân biệt thuộc tính chuỗi với thuộc tính xử lý khác.</p><p>Cell này chỉ tiền xử lý; hàm phân loại bên dưới vẫn cần từ vựng phù hợp với lemma. Ví dụ lemma <code>excellent</code> sẽ không khớp mục <code>excel</code> đã stem; <code>terrible</code> không khớp <code>terribl</code>. Đây là lý do chuẩn hóa và vocabulary phải dùng cùng một quy ước.</p></div></details>
+            <details class="hint"><summary>Mở cell 7 tiếp theo: phân loại cảm xúc vẫn là đếm từ khóa</summary><pre class="code-block"><code>def analyze_sentiment(sentence):
+    processed_tokens = preprocess_text(sentence)
+    positive_vocab = ["love", "great", "excel", "well", "happy"]
+    negative_vocab = ["hate", "bad", "terribl", "sad", "bore"]
+    pos_count = sum(1 for token in processed_tokens
+                    if token in positive_vocab)
+    neg_count = sum(1 for token in processed_tokens
+                    if token in negative_vocab)
+    if pos_count &gt; neg_count:
+        return "Tích cực"
+    elif neg_count &gt; pos_count:
+        return "Tiêu cực"
+    else:
+        return "Trung tính"
+
+review = "The movie is better than the previous one"
+result = analyze_sentiment(review)
+print(f"Review: {review}")
+print(f"Kết quả: {result}")</code></pre><div class="line-notes"><p><code>processed_tokens</code> dùng phiên bản Lemmatization vừa mở ở trên. Các dòng đếm và nhánh <code>if</code> làm cùng việc như cell 4.</p><p>Danh sách có <code>happy</code> thay vì <code>happi</code>, nhưng <code>excel</code> và <code>terribl</code> vẫn mang dạng stem. Từ vựng chưa đồng bộ với lemma như <code>excellent</code> / <code>terrible</code>.</p><p>Ba dòng cuối tạo review thử, gọi bộ phân loại và in đầu vào/đầu ra. Cell này được lưu output “Tích cực”, trong khi cell trước có output “Trung tính”; kernel notebook có thể giữ output cũ. Chạy tuần tự từ đầu để biết kết quả thật của môi trường hiện tại.</p></div></details>
+          </section>
+
+          <section class="practice-section">
+            <div class="section-heading"><span class="section-index practice-index">✎</span><div><p class="eyebrow">TỰ LÀM · 10 PHÚT</p><h2>Kiểm tra mình đã nắm luồng chưa</h2></div></div>
+            <div class="quiz" data-answer="b"><p class="quiz-question"><span>01</span> Sau khi token hóa câu, bước nào trong hàm được chạy kế tiếp?</p><label><input type="radio" name="q1" value="a"> Chọn nhãn cảm xúc</label><label><input type="radio" name="q1" value="b"> Lọc stop words</label><label><input type="radio" name="q1" value="c"> Chia dữ liệu train/test</label><button class="check-answer" type="button">Kiểm tra</button><p class="feedback" aria-live="polite"></p></div>
+            <div class="quiz" data-answer="c"><p class="quiz-question"><span>02</span> Nếu <code>pos_count = 2</code> và <code>neg_count = 1</code>, hàm trả về gì?</p><label><input type="radio" name="q2" value="a"> Tiêu cực</label><label><input type="radio" name="q2" value="b"> Trung tính</label><label><input type="radio" name="q2" value="c"> Tích cực</label><button class="check-answer" type="button">Kiểm tra</button><p class="feedback" aria-live="polite"></p></div>
+            <div class="write-practice"><div><p class="eyebrow">THỬ VIẾT BẰNG LỜI CỦA BẠN</p><h3>Giải thích hàm tiền xử lý</h3><p>Viết 2–3 câu: đầu vào là gì, các bước biến đổi nào diễn ra, đầu ra có dạng gì?</p></div><textarea aria-label="Câu trả lời của bạn" placeholder="Ví dụ: Hàm nhận vào..." rows="4"></textarea><button class="reveal-answer" type="button">Gợi ý trả lời</button><p class="answer-reveal" hidden>Hàm nhận một câu dạng chuỗi. Nó chia câu thành token, bỏ token nằm trong stop words, rút gọn các token còn lại bằng Porter Stemmer và trả về một danh sách chuỗi đã chuẩn hóa.</p></div>
+            <div class="day-finish"><div><b>Ngày 1 xong khi bạn có thể:</b><span>giải thích token → lọc → stemming → đếm từ khóa mà không nhìn code.</span></div><button class="complete-day" data-complete="1" type="button">Đánh dấu ngày 1 hoàn thành</button></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="day-panel" id="ngay-2" data-panel="2" hidden>
+        <div class="day-hero hero-blue">
+          <div class="hero-copy"><p class="eyebrow">NGÀY 02 · KHOẢNG 2–3 GIỜ</p><h1>Biến chữ<br>thành con số</h1><p class="hero-lede">Đọc notebook spam từ file CSV đến vector Bag-of-Words. Hôm nay là lúc hiểu vì sao mô hình không thể nhận trực tiếp một câu chữ.</p><div class="hero-tags"><span>Notebook: Text Classification</span><span>Trọng tâm: X, y, BoW</span></div></div>
+          <div class="hero-art art-blue" aria-hidden="true"><span class="art-orbit orbit-one"></span><span class="art-orbit orbit-two"></span><span class="art-word vector-art">[0, 2,<br>1, 0]</span><span class="art-chip chip-a">text</span><span class="art-chip chip-b">vector</span><span class="art-chip chip-c">01</span></div>
+        </div>
+        <div class="lesson-body">
+          <div class="callout callout-blue"><span class="callout-icon">↗</span><p><b>Ẩn dụ:</b> văn bản là câu trả lời tự do; mô hình cần một bảng số có cột cố định. Từ điển xác định tên các cột, Bag-of-Words điền số lần mỗi từ xuất hiện.</p></div>
+          <section class="lesson-section"><div class="section-heading"><span class="section-index">01</span><div><p class="eyebrow">DỮ LIỆU & NHÃN</p><h2>Đọc bảng: mỗi hàng là một ví dụ</h2></div></div>
+            <p class="section-intro">Dataset có 5.572 tin nhắn, với hai cột: <code>Message</code> là nội dung và <code>Category</code> là đáp án đã biết. Đây là học có giám sát: dùng ví dụ có nhãn để học cách dự đoán nhãn cho ví dụ mới.</p>
+            <pre class="code-block"><code>DATASET_PATH = '/content/cls_spam_text.csv'
+df = pd.read_csv(DATASET_PATH)
+messages = df['Message'].values.tolist()
+labels = df['Category'].values.tolist()
+
+le = LabelEncoder()
+y = le.fit_transform(labels)</code></pre>
+            <div class="line-notes"><p><code>DATASET_PATH</code> đặt đường dẫn file CSV. <code>/content</code> thường là thư mục của Google Colab; đường dẫn này không tự hoạt động trên máy cá nhân.</p><p><code>pd.read_csv(...)</code> đọc CSV thành DataFrame — bảng có hàng và cột.</p><p><code>df['Message']</code> chọn cột tin nhắn; <code>.values</code> lấy các giá trị; <code>.tolist()</code> đổi sang list Python.</p><p><code>LabelEncoder()</code> tạo bộ đổi nhãn chữ thành số. <code>fit_transform</code> vừa tìm các lớp vừa đổi chúng: ở notebook, <code>ham → 0</code>, <code>spam → 1</code>.</p></div>
+            <div class="label-example"><div class="label-row"><span>Nhãn gốc</span><b>ham</b><b>spam</b><b>ham</b></div><div class="label-arrow">↓ LabelEncoder</div><div class="label-row numeric"><span>Đưa vào mô hình</span><b>0</b><b>1</b><b>0</b></div><p>Sau dự đoán, <code>le.inverse_transform(...)</code> đổi số về nhãn chữ để con người đọc được.</p></div>
+            <details class="hint"><summary>Mở cell import: mỗi thư viện được dùng vào việc gì?</summary><pre class="code-block"><code>import string
+import nltk
+nltk.download('stopwords')
+nltk.download('punkt')
+nltk.download('punkt_tab')
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import LabelEncoder</code></pre><div class="line-notes"><p><code>string</code> cung cấp dấu câu ASCII; <code>nltk</code> cung cấp tokenizer, stop words và stemmer.</p><p><code>pandas as pd</code> đọc CSV; <code>numpy as np</code> tạo mảng/vector số.</p><p><code>matplotlib.pyplot as plt</code> dùng để vẽ biểu đồ nhưng không được dùng trong các cell còn lại của notebook này.</p><p><code>train_test_split</code> chia dữ liệu; <code>MultinomialNB</code> là thuật toán phân loại; <code>accuracy_score</code> đo độ chính xác; <code>LabelEncoder</code> đổi tên lớp thành số.</p><p><code>punkt</code> và <code>punkt_tab</code> là dữ liệu tokenizer NLTK. Phiên bản NLTK mới có thể cần <code>punkt_tab</code>; tải dữ liệu cho môi trường notebook, không phải “học” mô hình phân loại.</p></div><p class="fine-print">Cell tải CSV dùng <code>!gdown 1yuAdAo3gex-HsE1hB3Fa1hL5ucew4Jtb</code>. Dấu <code>!</code> là lệnh shell trong Colab, không phải Python thuần.</p></details>
+          </section>
+          <section class="lesson-section"><div class="section-heading"><span class="section-index">02</span><div><p class="eyebrow">CELL 11–12 · TIỀN XỬ LÝ</p><h2>Chuẩn hóa bằng các hàm nhỏ</h2></div></div>
+            <p class="section-intro">Mỗi hàm làm đúng một việc. Hàm tổng <code>preprocess_text</code> nối các bước theo thứ tự và trả danh sách token đã xử lý.</p>
+            <pre class="code-block"><code>def lowercase(text):
+    return text.lower()
+
+def punctuation_removal(text):
+    translator = str.maketrans('', '', string.punctuation)
+    return text.translate(translator)
+
+def tokenize(text):
+    return nltk.word_tokenize(text)
+
+def remove_stopwords(tokens):
+    stop_words = nltk.corpus.stopwords.words('english')
+    return [token for token in tokens if token not in stop_words]
+
+def stemming(tokens):
+    stemmer = nltk.stem.PorterStemmer()
+    return [stemmer.stem(token) for token in tokens]
+
+def preprocess_text(text):
+    text = lowercase(text)
+    text = punctuation_removal(text)
+    tokens = tokenize(text)
+    tokens = remove_stopwords(tokens)
+    tokens = stemming(tokens)
+    return tokens</code></pre>
+            <div class="line-notes"><p><code>text.lower()</code> trả bản chữ thường, không sửa biến ban đầu tại chỗ.</p><p><code>str.maketrans('', '', string.punctuation)</code> tạo bảng xóa dấu câu ASCII; <code>text.translate(translator)</code> áp dụng bảng đó. Dấu câu Unicode đặc biệt có thể vẫn còn.</p><p><code>nltk.word_tokenize(text)</code> tách chuỗi thành danh sách token; tokenizer cần dữ liệu NLTK tương ứng đã tải.</p><p><code>remove_stopwords</code> giữ token không có trong danh sách stop words. Dấu câu đã bị xóa ở bước trước nên danh sách token dễ lọc hơn.</p><p><code>stemming</code> chạy Porter Stemmer cho từng token. <code>return [...]</code> tạo một danh sách kết quả.</p><p>Trong <code>preprocess_text</code>, giá trị mới được gán lại cho <code>text</code> sau mỗi bước; cuối cùng hàm trả danh sách token, không còn trả một chuỗi câu.</p></div>
+            <div class="pipeline-card"><div class="pipeline-head"><span>ĐẦU VÀO</span><b>“FREE!! You are WINNING prizes”</b></div><div class="pipeline-track"><span>lowercase</span><i>→</i><span>xóa dấu câu</span><i>→</i><span>tokenize</span><i>→</i><span>lọc stop words</span><i>→</i><span>stem</span></div><div class="pipeline-out"><span>ĐẦU RA MINH HỌA</span><code>[free, win, prize]</code></div><p class="fine-print">Stem thực tế phụ thuộc từng từ và tokenizer; mục đích là nhìn rõ kiểu dữ liệu thay đổi qua pipeline.</p></div>
+            <div class="note-box note-caution"><b>Thiết kế nên cải thiện:</b> hàm hiện tại tạo lại danh sách stop words và Stemmer cho từng tin nhắn. Kết quả vẫn đúng, nhưng làm việc lặp lại tốn thời gian. Có thể tạo chúng một lần ở ngoài hàm. Ngoài ra, bỏ <code>not</code> có thể làm hỏng ý nghĩa câu.</div>
+            <div class="why-banner"><b>Vì sao thứ tự này quan trọng?</b><p>Viết thường và bỏ dấu câu giúp so sánh nhất quán; tokenization tạo đơn vị để lọc; stop words giảm nhiễu; stemming gộp biến thể. Bỏ hoặc đảo sai một bước có thể làm lệch danh sách từ mà mô hình nhìn thấy.</p></div>
+            <div class="python-lab-list" data-lab-group="day2-preprocess"></div>
+            <h3 class="subhead">Áp dụng hàm cho toàn bộ cột tin nhắn</h3><pre class="code-block"><code>messages = [
+    preprocess_text(message) for message in messages
+]</code></pre><div class="line-notes"><p>List comprehension gọi <code>preprocess_text</code> một lần cho mỗi tin nhắn trong list cũ.</p><p>Kết quả gán lại vào <code>messages</code>, nên sau cell này mỗi phần tử là một list token đã xử lý, không còn là chuỗi gốc.</p><p>Nhãn <code>labels</code> không bị thay đổi; thứ tự vẫn tương ứng với từng tin nhắn.</p></div>
+          </section>
+          <section class="lesson-section"><div class="section-heading"><span class="section-index">03</span><div><p class="eyebrow">CELL 13–15 · VOCABULARY & BAG-OF-WORDS</p><h2>Từ điển biến thành các cột số</h2></div></div>
+            <p class="section-intro">Mô hình cần các đặc trưng số. <b>Bag-of-Words (BoW)</b> tạo một vị trí cho mỗi từ trong từ điển và đếm số lần từ ấy xuất hiện trong câu. Nó giữ số lượng từ nhưng bỏ thứ tự từ.</p>
+            <pre class="code-block"><code>def create_dictionary(messages):
+    dictionary = set()
+    for tokens in messages:
+        for token in tokens:
+            dictionary.add(token)
+    return dictionary
+
+def create_features(tokens, dictionary):
+    features = np.zeros(len(dictionary))
+    for token in tokens:
+        if token in dictionary:
+            index = list(dictionary).index(token)
+            features[index] += 1
+    return features</code></pre>
+            <div class="line-notes"><p><code>set()</code> tạo tập hợp rỗng; một từ lặp lại chỉ được lưu một lần trong từ điển.</p><p>Hai vòng <code>for</code> đi qua từng tin nhắn rồi từng token; <code>dictionary.add(token)</code> thêm từ mới vào vocabulary.</p><p><code>np.zeros(len(dictionary))</code> tạo vector toàn số 0, có một ô cho mỗi từ trong từ điển.</p><p>Nếu token có trong từ điển, <code>index(...)</code> tìm vị trí cột của từ đó; <code>+= 1</code> tăng số đếm, nên một từ xuất hiện hai lần thì ô của nó bằng 2.</p><p>Kết quả là một vector đếm. Trong notebook, <code>X</code> là ma trận đặc trưng (mỗi hàng một tin nhắn), còn <code>y</code> là nhãn tương ứng.</p></div>
+            <pre class="code-block"><code>dictionary = create_dictionary(messages)
+X = np.array([
+    create_features(tokens, dictionary)
+    for tokens in messages
+])
+X[0]</code></pre><div class="line-notes"><p>Dòng đầu tạo một vocabulary dùng chung từ tất cả tin nhắn đã xử lý.</p><p>List comprehension biến từng danh sách token thành một vector; <code>np.array(...)</code> ghép các vector thành ma trận hai chiều.</p><p><code>X[0]</code> hiển thị vector của tin nhắn đầu tiên để kiểm tra dữ liệu số. Output notebook rút gọn các số ở giữa bằng dấu <code>...</code> vì vector có nhiều cột.</p></div>
+            <div class="bow-demo"><p class="eyebrow">VÍ DỤ NHỎ — TỪ ĐIỂN CỐ ĐỊNH THỨ TỰ</p><div class="bow-vocab"><span>cột 0</span><span>cột 1</span><span>cột 2</span><span>cột 3</span></div><div class="bow-vocab words"><b>free</b><b>win</b><b>meeting</b><b>prize</b></div><div class="bow-result"><span>“free free prize”</span><b>[2, 0, 0, 1]</b></div><p>Vector thứ hai dùng đúng cùng thứ tự cột: <code>“meeting win” → [0, 1, 1, 0]</code>.</p></div>
+            <div class="why-banner"><b>Vì sao phải có vocabulary chung?</b><p>Mỗi ô vector là một cột có ý nghĩa cố định. Nếu mỗi tin tự chọn thứ tự từ, cột số 0 sẽ mang nghĩa khác nhau và mô hình không thể học nhất quán.</p></div>
+            <div class="python-lab-list" data-lab-group="day2-bow"></div>
+            <div class="note-box note-caution"><b>Hai điểm cần hiểu khi đọc implementation:</b> (1) <code>dictionary</code> là <code>set</code>, thứ tự cột không được cam kết ổn định giữa các lần chạy; nên tạo danh sách từ vựng có thứ tự và lưu cùng model. (2) <code>list(dictionary).index(token)</code> dựng list/tìm vị trí liên tục, rất chậm khi từ điển lớn. Với project thật thường dùng <code>CountVectorizer</code> của scikit-learn.</div>
+          </section>
+          <section class="practice-section"><div class="section-heading"><span class="section-index practice-index">✎</span><div><p class="eyebrow">TỰ LÀM · 10 PHÚT</p><h2>Tự tính một vector BoW</h2></div></div>
+            <div class="quiz" data-answer="a"><p class="quiz-question"><span>01</span> Từ điển có thứ tự <code>[free, win, prize]</code>. Câu “win win free” thành vector nào?</p><label><input type="radio" name="q3" value="a"> [1, 2, 0]</label><label><input type="radio" name="q3" value="b"> [2, 1, 0]</label><label><input type="radio" name="q3" value="c"> [1, 1, 1]</label><button class="check-answer" type="button">Kiểm tra</button><p class="feedback" aria-live="polite"></p></div>
+            <div class="write-practice"><div><p class="eyebrow">NÓI THÀNH CÂU</p><h3><code>X</code> và <code>y</code> khác nhau thế nào?</h3><p>Thử giải thích trước khi mở gợi ý.</p></div><textarea aria-label="Giải thích X và y" placeholder="X chứa..., y chứa..." rows="3"></textarea><button class="reveal-answer" type="button">Gợi ý trả lời</button><p class="answer-reveal" hidden><code>X</code> chứa đặc trưng số của từng tin nhắn; <code>y</code> chứa nhãn đúng tương ứng của từng tin nhắn. Hàng thứ i của X và phần tử thứ i của y thuộc cùng một ví dụ.</p></div>
+            <div class="day-finish"><div><b>Ngày 2 xong khi bạn có thể:</b><span>tự giải thích cách một câu biến thành hàng số trong X và nhãn trong y.</span></div><button class="complete-day" data-complete="2" type="button">Đánh dấu ngày 2 hoàn thành</button></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="day-panel" id="ngay-3" data-panel="3" hidden>
+        <div class="day-hero hero-plum"><div class="hero-copy"><p class="eyebrow">NGÀY 03 · KHOẢNG 2–3 GIỜ</p><h1>Cho mô hình<br>học và dự đoán</h1><p class="hero-lede">Ghép toàn bộ pipeline: chia dữ liệu, huấn luyện Naive Bayes, đo chất lượng, rồi lần theo một dự đoán mới.</p><div class="hero-tags"><span>Multinomial Naive Bayes</span><span>Đọc lỗi, tự sửa, tự viết</span></div></div><div class="hero-art art-plum" aria-hidden="true"><span class="art-orbit orbit-one"></span><span class="art-orbit orbit-two"></span><span class="art-word">P(spam<br><i>| words)</i></span><span class="art-chip chip-a">train</span><span class="art-chip chip-b">test</span><span class="art-chip chip-c">?</span></div></div>
+        <div class="lesson-body">
+          <div class="callout callout-plum"><span class="callout-icon">↗</span><p><b>Bản đồ toàn bộ bài:</b> CSV → tin nhắn/nhãn → token → vector số → chia train/val/test → học → đánh giá → xử lý câu mới theo đúng từ điển → dự đoán.</p></div>
+          <section class="lesson-section"><div class="section-heading"><span class="section-index">01</span><div><p class="eyebrow">CELL 17 · CHIA DỮ LIỆU</p><h2>Mô hình phải gặp ví dụ mới</h2></div></div>
+            <p class="section-intro"><b>Train</b> dùng để học; <b>validation</b> dùng để theo dõi/chọn cách làm; <b>test</b> dành cho lần đánh giá cuối. Nếu đánh giá trên dữ liệu mô hình đã học, kết quả thường quá lạc quan.</p>
+            <pre class="code-block"><code>VAL_SIZE = 0.2
+TEST_SIZE = 0.125
+SEED = 0
+
+X_train, X_val, y_train, y_val = train_test_split(
+    X, y, test_size=VAL_SIZE, shuffle=True,
+    random_state=SEED
+)
+X_train, X_test, y_train, y_test = train_test_split(
+    X_train, y_train, test_size=TEST_SIZE,
+    shuffle=True, random_state=SEED
+)</code></pre>
+            <div class="line-notes"><p><code>VAL_SIZE = 0.2</code> giữ 20% làm validation. Lần chia đầu để lại 80% trong <code>X_train</code>.</p><p>Lần chia tiếp dùng <code>TEST_SIZE = 0.125</code> của phần 80% đó: test bằng 10% toàn bộ, train còn 70%. Vậy tỉ lệ là <b>70% train / 20% validation / 10% test</b>.</p><p><code>shuffle=True</code> xáo thứ tự trước khi chia; <code>random_state=0</code> giúp lần chạy sau chia giống lần trước.</p><p>Notebook chưa dùng <code>stratify=y</code>; với phân loại, thêm <code>stratify</code> thường giúp giữ gần đúng tỉ lệ ham/spam giữa các phần.</p></div>
+            <div class="split-visual"><div class="split-train"><b>70%</b><span>TRAIN</span></div><div class="split-val"><b>20%</b><span>VALIDATION</span></div><div class="split-test"><b>10%</b><span>TEST</span></div></div>
+            <div class="note-box note-caution"><b>Một chỗ rò rỉ dữ liệu trong notebook:</b> vocabulary và vector <code>X</code> được tạo từ toàn bộ tin nhắn trước khi chia. Test đã ảnh hưởng đến các cột từ vựng. Cách sạch hơn là chia dữ liệu trước, rồi chỉ fit bộ biến đổi trên train và áp dụng y nguyên cho validation/test.</div>
+          </section>
+          <section class="lesson-section"><div class="section-heading"><span class="section-index">02</span><div><p class="eyebrow">CELL 19 · TRAINING</p><h2>Naive Bayes học điều gì?</h2></div></div>
+            <p class="section-intro">Multinomial Naive Bayes phù hợp với đặc trưng đếm từ. Nó ước lượng từ dữ liệu huấn luyện xem từng từ thường xuất hiện ở lớp nào, rồi chọn lớp có xác suất cao nhất cho tin mới.</p>
+            <div class="math-card"><p class="eyebrow">Ý TƯỞNG, KHÔNG CẦN HỌC THUỘC CÔNG THỨC</p><div class="math-line">P(lớp | các từ) ∝ P(lớp) × P(từ₁ | lớp) × P(từ₂ | lớp) × …</div><p>“Naive” là giả định đơn giản hóa: xem các từ độc lập với nhau khi đã biết lớp. Trong thực tế ngôn ngữ, chúng không hoàn toàn độc lập, nhưng cách tính này vẫn thường hiệu quả với bài phân loại văn bản cơ bản.</p></div>
+            <div class="count-evidence"><b>Model nhìn tần suất, không nhìn ý nghĩa như người</b><div class="evidence-table"><span>Từ trong vocabulary</span><span>Trong spam</span><span>Trong ham</span><b>free</b><strong>3 lần</strong><strong>0 lần</strong><b>meeting</b><strong>0 lần</strong><strong>3 lần</strong></div><p>Ví dụ nhỏ này cho ta dấu hiệu ban đầu: free nghiêng về spam, meeting nghiêng về ham. Model kết hợp nhiều dấu hiệu và cả tỉ lệ lớp, không áp một luật cứng cho riêng từ free.</p><p><b>Smoothing:</b> nếu một từ chưa từng xuất hiện ở ham, model không kết luận xác suất ham bằng 0 mãi mãi. <code>MultinomialNB()</code> dùng cộng làm trơn mặc định <code>alpha=1.0</code>, để lần xuất hiện chưa thấy không xóa sạch cả một lớp. <a href="https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.MultinomialNB.html" target="_blank" rel="noreferrer">Tài liệu scikit-learn ↗</a></p></div>
+            <pre class="code-block"><code>%%time
+model = MultinomialNB()
+print('Start training...')
+model = model.fit(X_train, y_train)
+print('Training completed!')</code></pre>
+            <div class="line-notes"><p><code>%%time</code> là “magic” của Jupyter để đo thời gian toàn cell; không phải cú pháp Python thuần khi lưu thành file <code>.py</code>.</p><p><code>MultinomialNB()</code> tạo mô hình cho đặc trưng đếm. <code>print(...)</code> chỉ in thông báo để người chạy biết trạng thái, không làm mô hình thông minh hơn.</p><p><code>fit(X_train, y_train)</code> học mối liên hệ giữa vector từ và nhãn ham/spam. Dữ liệu validation/test chưa được dùng để fit.</p><p>Notebook báo train hoàn tất trong khoảng 0,14 giây trên môi trường chạy lúc đó; thời gian thay đổi theo máy và môi trường.</p></div>
+            <div class="toy-model"><div><span class="toy-word">“free”</span><span class="toy-note">xuất hiện nhiều trong spam</span></div><div class="toy-word-arrow">→</div><div><span class="toy-class spam-class">spam</span><span class="toy-note">xác suất tăng</span></div><p>Không có một luật cứng “free = spam”; model kết hợp tín hiệu của nhiều từ và tần suất đã học.</p></div>
+            <div class="why-banner"><b>Vì sao cần model thay vì tự viết list từ?</b><p>Luật sentiment chỉ đếm một bộ từ do con người chọn. Naive Bayes ước lượng mối liên hệ từ các ví dụ đã có nhãn, nên dùng được nhiều tín hiệu hơn mà không phải viết một luật cho từng từ.</p></div>
+            <div class="python-lab-list" data-lab-group="day3-model"></div>
+          </section>
+          <section class="lesson-section"><div class="section-heading"><span class="section-index">03</span><div><p class="eyebrow">CELL 21 · EVALUATION</p><h2>Accuracy trả lời câu hỏi nào?</h2></div></div>
+            <pre class="code-block"><code>y_val_pred = model.predict(X_val)
+y_test_pred = model.predict(X_test)
+val_accuracy = accuracy_score(y_val, y_val_pred)
+test_accuracy = accuracy_score(y_test, y_test_pred)</code></pre>
+            <div class="line-notes"><p><code>predict(...)</code> tạo nhãn dự đoán cho từng vector trong validation/test.</p><p><code>accuracy_score(y_thật, y_dự_đoán)</code> tính phần trăm nhãn dự đoán trùng nhãn thật.</p><p>Notebook lưu kết quả khoảng <b>98.2% validation</b> và <b>98.0% test</b>. Điều đó nghĩa là đúng khoảng 98 trên 100 tin ở hai tập này — không có nghĩa là mô hình hiểu 98% mọi email ngoài đời.</p></div>
+            <details class="hint"><summary>Mở đúng cell đánh giá</summary><pre class="code-block"><code>y_val_pred = model.predict(X_val)
+y_test_pred = model.predict(X_test)
+val_accuracy = accuracy_score(y_val, y_val_pred)
+test_accuracy = accuracy_score(y_test, y_test_pred)
+print(f'Val accuracy: {val_accuracy}')
+print(f'Test accuracy: {test_accuracy}')</code></pre><p>Hai câu <code>print</code> chỉ trình bày kết quả ra màn hình. Chữ <code>f</code> trong f-string cho phép chèn giá trị biến vào chuỗi.</p></details>
+            <div class="note-box note-caution"><b>Đọc accuracy có ngữ cảnh:</b> nếu dữ liệu có rất nhiều ham và ít spam, đoán toàn ham vẫn có thể cho accuracy cao. Khi triển khai bộ lọc spam, hãy xem thêm precision (email bị gắn spam có đúng không), recall (đã bắt được bao nhiêu spam), F1 và confusion matrix.</div>
+          </section>
+          <section class="lesson-section"><div class="section-heading"><span class="section-index">04</span><div><p class="eyebrow">CELL 23–24 · DỰ ĐOÁN MỚI</p><h2>Tìm lỗi bằng cách lần theo kiểu dữ liệu</h2></div></div>
+            <p class="section-intro">Hàm dự đoán phải đưa câu mới đi qua đúng pipeline đã dùng lúc huấn luyện. Đây là nguyên tắc quan trọng: cùng một văn bản phải được biến thành đúng số cột, theo đúng thứ tự từ.</p>
+            <pre class="code-block code-broken"><code>def predict(text, model, dictionary):
+    processed_text = preprocess_text(text)
+    features = create_features(text, dictionary)  # lỗi: dùng text thô
+    features = np.array(features).reshape(1, -1)
+    prediction = model.predict(features)
+    prediction_cls = le.inverse_transform(prediction)[0]
+    return prediction_cls</code></pre>
+            <div class="bug-card"><div class="bug-badge">LỖI KIỂU DỮ LIỆU</div><h3>Đã xử lý câu, nhưng lại không dùng kết quả</h3><p><code>processed_text</code> là danh sách token như <code>[actually, think, way, ...]</code>. Dòng tiếp theo đưa <code>text</code> gốc vào <code>create_features</code>. Hàm sẽ lặp qua từng ký tự của chuỗi; phần lớn ký tự không khớp vocabulary chứa từ hoàn chỉnh (trừ khi vocabulary có token một ký tự), nên vector có thể toàn số 0 hoặc đếm sai vài ký tự. Mô hình vẫn trả nhãn, nhưng nhãn đó không phải dự đoán đáng tin cậy từ nội dung câu.</p><div class="fix-label">SỬA DÒNG NÀY</div><pre class="code-block code-fixed"><code>features = create_features(processed_text, dictionary)</code></pre><p>Notebook in ra <code>ham</code> cho ví dụ cuối; nếu vector toàn 0, lớp có xác suất tiên nghiệm cao hơn có thể khiến kết quả trông hợp lý dù pipeline bị lỗi.</p></div>
+            <div class="line-notes"><p><code>processed_text</code> được tính, nhưng trong code gốc không được dùng ở dòng feature; đây là dấu hiệu lỗi khi lần theo dữ liệu.</p><p><code>reshape(1, -1)</code> tạo một mẫu với đúng số cột mà model đã học.</p><p><code>model.predict</code> trả mã lớp; <code>inverse_transform</code> đổi mã số thành tên ham/spam; <code>[0]</code> lấy nhãn duy nhất của một câu.</p></div>
+            <pre class="code-block"><code>test_input = 'I am actually thinking a way of doing something useful'
+prediction_cls = predict(test_input, model, dictionary)
+print(f'Prediction: {prediction_cls}')</code></pre><div class="line-notes"><p><code>test_input</code> là câu mới đưa vào hàm. Dòng tiếp theo gọi pipeline dự đoán; dòng cuối in nhãn dự đoán ra màn hình.</p></div>
+            <h3 class="subhead">Ba dòng cuối làm gì?</h3><div class="line-notes"><p><code>np.array(features).reshape(1, -1)</code> biến vector thành ma trận có một hàng, vì sklearn mong đầu vào dạng <code>(số_mẫu, số_đặc_trưng)</code>.</p><p><code>model.predict(features)</code> trả mảng mã nhãn, ví dụ <code>[0]</code>.</p><p><code>le.inverse_transform(...)[0]</code> đổi mã về chữ <code>ham</code>/<code>spam</code>, rồi lấy phần tử đầu tiên vì chỉ dự đoán một câu.</p></div>
+          </section>
+          <section class="practice-section"><div class="section-heading"><span class="section-index practice-index">✎</span><div><p class="eyebrow">THỬ THÁCH CUỐI · 20 PHÚT</p><h2>Tự dựng lại đường đi của một tin nhắn</h2></div></div>
+            <div class="quiz" data-answer="b"><p class="quiz-question"><span>01</span> Vì sao khi dự đoán câu mới phải dùng cùng vocabulary với lúc train?</p><label><input type="radio" name="q4" value="a"> Để câu mới có cùng số từ với câu train</label><label><input type="radio" name="q4" value="b"> Vì mỗi cột của vector phải giữ đúng ý nghĩa/vị trí đã học</label><label><input type="radio" name="q4" value="c"> Vì Naive Bayes chỉ nhận câu cũ</label><button class="check-answer" type="button">Kiểm tra</button><p class="feedback" aria-live="polite"></p></div>
+            <div class="quiz" data-answer="a"><p class="quiz-question"><span>02</span> Accuracy 98% đảm bảo điều gì?</p><label><input type="radio" name="q5" value="a"> Khoảng 98% dự đoán đúng trên tập dữ liệu đã đánh giá</label><label><input type="radio" name="q5" value="b"> Mô hình sẽ đúng 98% với mọi email sắp tới</label><label><input type="radio" name="q5" value="c"> Không có spam nào bị bỏ sót</label><button class="check-answer" type="button">Kiểm tra</button><p class="feedback" aria-live="polite"></p></div>
+            <div class="write-practice"><div><p class="eyebrow">BÀI TẬP VIẾT CODE</p><h3>Viết lại “xương sống” của hàm <code>predict</code></h3><p>Viết 4–6 dòng theo thứ tự: xử lý câu → tạo vector → đổi shape → dự đoán → đổi mã về nhãn. Bạn có thể gõ trên điện thoại như một bản nháp.</p></div><textarea aria-label="Bản nháp hàm predict" placeholder="processed_text = ..." rows="6"></textarea><button class="reveal-answer" type="button">Xem một lời giải mẫu</button><pre class="answer-reveal code-block" hidden><code>processed_text = preprocess_text(text)
+features = create_features(processed_text, dictionary)
+features = np.array(features).reshape(1, -1)
+prediction = model.predict(features)
+prediction_cls = le.inverse_transform(prediction)[0]
+return prediction_cls</code></pre></div>
+            <div class="rebuild-card"><p class="eyebrow">TỰ KIỂM TRA TRƯỚC KHI KẾT THÚC</p><h3>Hãy thử đóng trang và giải thích mỗi bước bằng lời</h3><ol><li>Vì sao câu chữ phải được token hóa và chuẩn hóa?</li><li>Vocabulary và vector BoW có mối quan hệ gì?</li><li>Train, validation, test khác nhau thế nào?</li><li><code>fit</code> làm gì, <code>predict</code> làm gì?</li><li>Trong hàm predict, vì sao phải truyền <code>processed_text</code>?</li></ol><p>Nếu mắc ở bước nào, quay lại đúng mục đó và tự làm ví dụ nhỏ bằng 2–3 câu.</p></div>
+            <div class="python-lab-list" data-lab-group="day3-rebuild"></div>
+            <div class="day-finish"><div><b>Ngày 3 xong khi bạn có thể:</b><span>vẽ pipeline từ tin nhắn CSV đến nhãn dự đoán, đồng thời chỉ ra và sửa lỗi truyền nhầm biến.</span></div><button class="complete-day" data-complete="3" type="button">Đánh dấu ngày 3 hoàn thành</button></div>
+          </section>
+        </div>
+      </section>
+
+      <footer class="site-footer"><span class="brand-mark small-mark">N</span><p>Bài học được soạn từ hai notebook và slide có trong thư mục này. Tiến độ được lưu trên trình duyệt của thiết bị bạn đang dùng.</p><a href="#ngay-1">Lên đầu trang ↑</a></footer>
+    </main>
+  </div>
+
+  <section class="presentation-overlay" id="presentation" role="dialog" aria-modal="true" aria-labelledby="slide-title" aria-describedby="slide-lede" hidden>
+    <header class="presentation-header">
+      <button class="presentation-close" id="close-presentation" type="button" aria-label="Đóng trình chiếu và quay lại bài học">← <span>Quay lại bài học</span></button>
+      <div class="presentation-brand"><span class="brand-mark">N</span><span>GIA SƯ AI · NLP<small>Hiểu cách nghĩ trước khi nhớ code</small></span></div>
+      <span class="presentation-key-hint">← → để chuyển · Esc để đóng</span>
+    </header>
+    <nav class="presentation-chapters" aria-label="Chọn ngày trong bài trình chiếu">
+      <button type="button" data-slide-chapter="1">Ngày 1 · Python & cảm xúc</button>
+      <button type="button" data-slide-chapter="2">Ngày 2 · Chữ thành số</button>
+      <button type="button" data-slide-chapter="3">Ngày 3 · Học & dự đoán</button>
+    </nav>
+    <main class="presentation-scroll" id="slide-stage" tabindex="-1" aria-live="polite">
+      <div class="slide-content" id="slide-content"></div>
+    </main>
+    <footer class="presentation-controls">
+      <button class="slide-prev" id="slide-prev" type="button">← <span>Slide trước</span></button>
+      <div class="slide-progress-wrap"><span id="slide-counter" aria-live="polite">1 / 23</span><span class="slide-progress" role="progressbar" aria-label="Tiến độ trình chiếu" aria-valuemin="1" aria-valuemax="23" aria-valuenow="1"><i id="slide-progress-fill"></i></span></div>
+      <button class="slide-next" id="slide-next" type="button"><span>Slide tiếp</span> →</button>
+    </footer>
+  </section>
+</body>
+</html>
