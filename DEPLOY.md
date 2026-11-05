@@ -1,8 +1,8 @@
-# Học AI-NLP trong 3 ngày
+# Lộ trình AI-NLP: nền tảng và retrieval
 
 ## Đưa website lên để chạy Python trên điện thoại
 
-1. Chỉ tải nội dung trong thư mục `dist/` lên dịch vụ host static của bạn. Thư mục này có trang học, 23 slide tư duy code, trình chạy và hướng dẫn; không chứa notebook hoặc PDF gốc.
+1. Tải toàn bộ thư mục dist/ lên dịch vụ host static của bạn. Thư mục này có trang học và ba buổi thực hành từ Python/TF đến hai notebook TF-IDF trong b2: kiểm tra đạo văn và text retrieval. Giáo án, notebook thực hành và trình chạy Python nằm trong dist. Không cần đưa PDF và notebook gốc của b2 lên host.
 2. Dùng địa chỉ HTTPS của host để mở `index.html` trên điện thoại. Không mở đường dẫn `file://` nếu muốn bấm Chạy.
 3. Bài đọc mở ngay; lần đầu bấm **Chạy code**, trình duyệt tải Pyodide và thư viện cần thiết từ CDN chính thức. Các lần chạy sau dùng runtime đã nạp trong phiên trang.
 4. Nếu mất mạng khi tải runtime, thông báo hiện ở ngay thẻ bài; kết nối lại rồi bấm Chạy lần nữa.

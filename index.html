@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f7f8f5">
-  <meta name="description" content="Lộ trình học hai notebook AI-NLP trong ba ngày, có giải thích code và bài tập tương tác.">
+  <meta name="theme-color" content="#101613">
+  <meta name="description" content="Ba buổi AI-NLP cho người mới: từ Python và TF đến tự viết notebook kiểm tra đạo văn, TF-IDF Text Retrieval.">
   <title>AI-NLP — Từ chạy được đến tự viết lại được</title>
   <link rel="stylesheet" href="styles.css">
   <script src="lessons.js" defer></script>
@@ -13,12 +13,12 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#ngay-1" aria-label="Về ngày 1">
+    <a class="brand" href="#ngay-4" aria-label="Mở bài học mới đầu tiên">
       <span class="brand-mark">N</span>
-      <span>HỌC AI · NLP <small>lộ trình 3 ngày</small></span>
+      <span>HỌC AI · NLP <small>3 buổi tiếp theo</small></span>
     </a>
     <div class="top-progress" aria-live="polite">
-      <span id="progress-label">0/3 ngày hoàn thành</span>
+      <span id="progress-label">0/3 buổi mới hoàn thành</span>
       <span class="progress-track"><span id="progress-fill"></span></span>
     </div>
     <span class="runtime-pill" id="runtime-pill" aria-live="polite"><i></i><span>Python chưa tải</span></span>
@@ -29,20 +29,23 @@
     <aside class="sidebar" aria-label="Điều hướng lộ trình">
       <p class="eyebrow side-label">LỘ TRÌNH</p>
       <nav class="day-nav">
-        <button class="day-tab active" data-day="1" type="button"><span class="tab-number">01</span><span><b>Nền tảng & cảm xúc</b><small>Token · stem · từ khóa</small></span><span class="done-dot" aria-hidden="true">✓</span></button>
+        <button class="day-tab" data-day="1" type="button"><span class="tab-number">01</span><span><b>Nền tảng & cảm xúc</b><small>Token · stem · từ khóa</small></span><span class="done-dot" aria-hidden="true">✓</span></button>
         <button class="day-tab" data-day="2" type="button"><span class="tab-number">02</span><span><b>Biến chữ thành số</b><small>Spam · BoW · chia dữ liệu</small></span><span class="done-dot" aria-hidden="true">✓</span></button>
         <button class="day-tab" data-day="3" type="button"><span class="tab-number">03</span><span><b>Học & dự đoán</b><small>Naive Bayes · đánh giá</small></span><span class="done-dot" aria-hidden="true">✓</span></button>
+        <button class="day-tab upcoming-tab active" data-day="4" data-upcoming="true" type="button"><span class="tab-number">04</span><span><b>Tự viết TF-IDF</b><small>Python · vocabulary · TF</small></span><span class="done-dot" aria-hidden="true">✓</span></button>
+        <button class="day-tab upcoming-tab" data-day="5" data-upcoming="true" type="button"><span class="tab-number">05</span><span><b>Cosine &amp; đạo văn</b><small>IDF · NumPy · heatmap</small></span><span class="done-dot" aria-hidden="true">✓</span></button>
+        <button class="day-tab upcoming-tab" data-day="6" data-upcoming="true" type="button"><span class="tab-number">06</span><span><b>Text retrieval</b><small>pandas · sklearn · top-k</small></span><span class="done-dot" aria-hidden="true">✓</span></button>
       </nav>
-      <button class="presentation-launch" id="open-presentation" type="button"><span aria-hidden="true">▶</span> Học bằng slide tư duy code</button>
+      <button class="presentation-launch" id="open-presentation" type="button"><span aria-hidden="true">▶</span> Slide tư duy code · nền tảng 1–3</button>
       <div class="sidebar-note">
         <span class="note-icon">✳</span>
         <p><b>Cách học</b><br>Đọc một ý, tự đoán kết quả, rồi mới mở lời giải. Không cần học thuộc thuật ngữ.</p>
       </div>
-      <div class="sidebar-note source-note"><span class="note-icon">⌁</span><p><b>Code bám sát bài gốc</b><br>Notebook/PDF gốc được đọc để soạn bài, nhưng không nằm trong gói triển khai website.</p></div>
+      <div class="sidebar-note source-note"><span class="note-icon">⌁</span><p><b>Code bám sát bài gốc</b><br>Notebook nền tảng được dùng để soạn ba buổi đầu; notebook thực hành cho buổi 3–5 có nút tải ngay trong bài mới.</p></div>
     </aside>
 
     <main id="main-content">
-      <section class="day-panel active" id="ngay-1" data-panel="1">
+      <section class="day-panel" id="ngay-1" data-panel="1" hidden>
         <div class="day-hero hero-olive">
           <div class="hero-copy">
             <p class="eyebrow">NGÀY 01 · KHOẢNG 2–3 GIỜ</p>
@@ -385,7 +388,257 @@ return prediction_cls</code></pre></div>
         </div>
       </section>
 
-      <footer class="site-footer"><span class="brand-mark small-mark">N</span><p>Bài học được soạn từ hai notebook và slide có trong thư mục này. Tiến độ được lưu trên trình duyệt của thiết bị bạn đang dùng.</p><a href="#ngay-1">Lên đầu trang ↑</a></footer>
+      <section class="day-panel active" id="ngay-4" data-panel="4" data-upcoming="true">
+        <div class="day-hero hero-blue"><div class="hero-copy">
+          <p class="eyebrow">BUỔI 3 · THỨ BA, 03/11/2026 · 2–3 GIỜ</p>
+          <h1>Từ câu chữ<br>đến TF-IDF</h1>
+          <p class="hero-lede">Bắt đầu từ thao tác Python nhỏ, rồi tự viết tiền xử lý, vocabulary và Term Frequency như notebook kiểm tra đạo văn.</p>
+          <div class="hero-tags"><span>Không giả định biết IT</span><span>Viết từng hàm từ đầu</span></div>
+        </div><div class="hero-art art-blue" aria-hidden="true"><span class="art-orbit orbit-one"></span><span class="art-orbit orbit-two"></span><span class="art-word">text<br><i>→ vector</i></span><span class="art-chip chip-a">words</span><span class="art-chip chip-b">TF</span><span class="art-chip chip-c">1</span></div></div>
+        <div class="lesson-body">
+          <div class="callout"><span class="callout-icon">↗</span><p><b>Đích buổi 3:</b> tự viết preprocess, create_corpus và compute_tf. Hôm nay ta chỉ biến câu thành danh sách, tạo từ điển và đếm.</p></div>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">00</span><div><p class="eyebrow">ĐỌC PYTHON CHO NGƯỜI MỚI</p><h2>5 kiểu dữ liệu sẽ gặp trong notebook</h2></div></div>
+            <div class="evidence-table"><span>Kiểu</span><span>Ví dụ</span><span>Dùng để</span><b>str</b><strong>"mèo ăn cá"</strong><strong>giữ một đoạn chữ</strong><b>list</b><strong>["mèo","ăn","cá"]</strong><strong>giữ phần tử theo thứ tự</strong><b>set</b><strong>{"ăn","cá","mèo"}</strong><strong>loại từ trùng</strong><b>dict</b><strong>{"mèo":2}</strong><strong>tra số lần theo từ</strong><b>array</b><strong>[0.3,0.0,0.7]</strong><strong>mảng số để tính</strong></div>
+            <pre class="code-block"><code>name = "mèo"                 # str
+words = ["mèo", "ăn", "cá"]  # list
+unique_words = set(words)    # set: còn một "mèo"
+counts = {"mèo": 1}          # dict: từ → số lần
+print(words[0])              # mèo; vị trí đầu tiên là 0</code></pre>
+            <div class="line-notes"><p><code>=</code> gán giá trị cho tên bên trái. Nó không phải dấu bằng để so sánh.</p><p>Dấu nháy tạo chữ; số không có dấu nháy là số để tính. Ngoặc vuông tạo list.</p><p>Set loại phần tử trùng nhưng không cam kết thứ tự; ta dùng sorted trước khi tạo cột vector.</p><p>Khoảng trắng đầu dòng quyết định lệnh nào ở trong hàm/vòng lặp. Mỗi khối thụt vào 4 dấu cách.</p></div>
+            <div class="note-box">Đọc mỗi dòng bằng ba câu: đang có dữ liệu gì, dòng này làm gì, kết quả đi đâu? Hàm là nhóm lệnh có tên; vòng lặp chạy cùng thao tác nhiều lần.</div>
+          </section>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">01</span><div><p class="eyebrow">BƯỚC 1 · PREPROCESS</p><h2>Từ câu thành danh sách từ</h2></div></div>
+            <p class="section-intro">Ta đưa chữ về chữ thường rồi tách tại khoảng trắng. Đây chưa phải tokenizer hoàn chỉnh; mục tiêu là hiểu kiểu dữ liệu đổi từ str sang list.</p>
+            <pre class="code-block"><code>def preprocess(text):
+    text = text.lower()
+    words = text.split()
+    return words
+
+print(preprocess("Mèo ĂN Cá"))</code></pre>
+            <div class="line-notes"><p><code>def preprocess(text):</code> khai báo hàm; câu đầu vào được đặt vào biến text.</p><p><code>text.lower()</code> tạo chữ thường rồi gán lại cho text.</p><p><code>text.split()</code> cắt theo khoảng trắng và trả list[str].</p><p><code>return words</code> gửi list về nơi gọi; print chỉ hiện ra, không thay thế return.</p></div>
+            <div class="example-panel"><div><p class="eyebrow">THEO DÕI MỘT GIÁ TRỊ</p><h3>"Mèo ĂN Cá"</h3></div><ol class="transform-steps"><li><span>Input</span><code>str: "Mèo ĂN Cá"</code></li><li><span>lower</span><code>"mèo ăn cá"</code></li><li><span>split</span><code>["mèo","ăn","cá"]</code></li><li><span>return</span><code>list về nơi gọi</code></li></ol><p class="fine-print">split chỉ tách khoảng trắng; dấu chấm/phẩy có thể dính vào từ. Ta giữ quy tắc này để khớp notebook nguồn.</p></div>
+          </section>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">02</span><div><p class="eyebrow">BƯỚC 2 · CORPUS VÀ VOCABULARY</p><h2>Tạo danh sách từ chung cho mọi tài liệu</h2></div></div>
+            <p class="section-intro">Corpus là toàn bộ văn bản. Vocabulary là danh sách từ duy nhất làm cột vector. Mọi văn bản phải dùng cùng thứ tự cột.</p>
+            <pre class="code-block"><code>def create_corpus(docs):
+    processed_docs = []
+    vocabulary_set = set()
+    for text in docs:
+        words = preprocess(text)
+        processed_docs.append(words)
+        for word in words:
+            vocabulary_set.add(word)
+    vocabulary = sorted(vocabulary_set)
+    return processed_docs, vocabulary</code></pre>
+            <div class="line-notes"><p>Ta tạo list rỗng để lưu tài liệu đã tách từ và set rỗng để gom từ không trùng.</p><p>Vòng ngoài lấy từng câu; append thêm list từ của câu vào processed_docs.</p><p>Vòng trong đi từng từ; add đưa vào set. Từ gặp lại không làm set lớn thêm.</p><p>sorted tạo thứ tự cột ổn định. return trả hai kết quả; bên gọi nhận bằng <code>processed_docs, vocabulary = create_corpus(docs)</code>.</p></div>
+            <div class="example-panel"><div><p class="eyebrow">VÍ DỤ 2 TÀI LIỆU</p><h3>Corpus nhỏ để tự kiểm tra</h3></div><ol class="transform-steps"><li><span>d0</span><code>"mèo ăn cá mèo"</code></li><li><span>d1</span><code>"chó ăn cá"</code></li><li><span>vocabulary</span><code>["ăn","cá","chó","mèo"]</code></li><li><span>số cột</span><code>4 từ → 4 ô</code></li></ol></div>
+            <div class="python-lab-list" data-lab-group="day4-foundations"></div>
+          </section>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">03</span><div><p class="eyebrow">BƯỚC 3 · TERM FREQUENCY</p><h2>TF là tỷ lệ từ trong một tài liệu</h2></div></div>
+            <div class="math-card"><p class="eyebrow">CÔNG THỨC</p><div class="math-line">TF(word, doc) = số lần word / tổng số từ trong doc</div><p>Trong ["mèo","ăn","cá","mèo"], TF(mèo)=2/4=0.5; TF(ăn)=1/4=0.25; từ vắng mặt nhận 0.</p></div>
+            <pre class="code-block"><code>def compute_tf(word_list, vocabulary):
+    word_count = {}
+    for word in word_list:
+        word_count[word] = word_count.get(word, 0) + 1
+    total_words = len(word_list)
+    tf_vector = []
+    for word in vocabulary:
+        count = word_count.get(word, 0)
+        tf_vector.append(count / total_words if total_words else 0)
+    return np.array(tf_vector)</code></pre>
+            <div class="line-notes"><p><code>word_count = {}</code> tạo dict đếm từ.</p><p><code>.get(word, 0)</code> lấy số cũ; nếu chưa có, bắt đầu từ 0 rồi cộng 1.</p><p>Vòng cuối đi theo vocabulary, không theo thứ tự trong câu, để số nằm đúng cột.</p><p>total_words là mẫu số. Nhánh if tránh chia cho 0 nếu tài liệu rỗng.</p><p><code>np.array</code> đổi list số thành mảng NumPy để buổi sau nhân từng ô với IDF.</p></div>
+            <div class="python-lab-list" data-lab-group="day4-tf"></div>
+            <div class="note-box">Đạt buổi này khi bạn giải thích được vì sao TF(mèo)=0.5, vocabulary có 4 cột và vector có 4 số.</div>
+          </section>
+          <section class="practice-section"><div class="section-heading"><span class="section-index practice-index">✎</span><div><p class="eyebrow">TỰ LÀM · KHÔNG NHÌN LỜI GIẢI</p><h2>Tự viết 3 hàm nền tảng</h2></div></div>
+            <div class="quiz" data-answer="b"><p class="quiz-question"><span>01</span> Vì sao cần sorted vocabulary trước khi tạo vector?</p><label><input type="radio" name="q9" value="a"> Để xóa từ trong câu</label><label><input type="radio" name="q9" value="b"> Để cột 0, 1, 2 luôn có nghĩa ổn định</label><label><input type="radio" name="q9" value="c"> Để TF luôn bằng 1</label><button class="check-answer" type="button">Kiểm tra</button><p class="feedback" aria-live="polite"></p></div>
+            <div class="write-practice"><div><p class="eyebrow">BÀI CUỐI BUỔI</p><h3>Từ trang trắng đến TF</h3><p>Viết lại ba hàm với hai câu “mèo ăn cá mèo”, “chó ăn cá”.</p></div><textarea aria-label="Kế hoạch code preprocess corpus TF" placeholder="Hàm nhận kiểu gì và trả kiểu gì?" rows="4"></textarea></div>
+            <div class="day-finish"><div><b>Buổi 3 đạt khi bạn có thể:</b><span>tự viết 3 hàm, đoán đúng vocabulary và kiểm tra TF(mèo)=0.5.</span></div><button class="complete-day" data-complete="4" data-session="3" type="button">Đánh dấu buổi 3 hoàn thành</button></div>
+            <div class="source-links"><a class="source-link" href="b3/Bai_3_Python_va_TF.ipynb" download>Tải notebook thực hành ↗</a><a class="source-link" href="b3/Bai_3_Python_va_TF.md" target="_blank" rel="noreferrer">Mở giáo án ↗</a></div>
+          </section>
+        </div>
+      </section>
+      <section class="day-panel" id="ngay-5" data-panel="5" data-upcoming="true" hidden>
+        <div class="day-hero hero-olive"><div class="hero-copy">
+          <p class="eyebrow">BUỔI 4 · THỨ TƯ, 04/11/2026 · 2–3 GIỜ</p>
+          <h1>Từ TF-IDF<br>đến kiểm tra đạo văn</h1>
+          <p class="hero-lede">Hoàn thành IDF, TF-IDF, cosine và so mọi cặp tài liệu như notebook thứ nhất.</p>
+          <div class="hero-tags"><span>NumPy từng bước</span><span>Ma trận · heatmap</span></div>
+        </div><div class="hero-art art-olive" aria-hidden="true"><span class="art-orbit orbit-one"></span><span class="art-orbit orbit-two"></span><span class="art-word">TF × IDF<br><i>→ cosine</i></span><span class="art-chip chip-a">0.5</span><span class="art-chip chip-b">1.0</span><span class="art-chip chip-c">2</span></div></div>
+        <div class="lesson-body">
+          <div class="callout callout-warm"><span class="callout-icon">↗</span><p><b>Đích buổi 4:</b> tự tạo ma trận TF-IDF, so mọi cặp văn bản và giải thích heatmap. Đây là xương sống của notebook plagiarism checker.</p></div>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">01</span><div><p class="eyebrow">ÔN TF VÀ HỌC IDF</p><h2>IDF làm nổi bật từ ít phổ biến</h2></div></div>
+            <p class="section-intro">TF nhìn một tài liệu. IDF nhìn toàn corpus: từ có mặt khắp nơi ít giúp phân biệt; từ chỉ có ở vài tài liệu hữu ích hơn để nhận ra nội dung riêng.</p>
+            <div class="math-card"><p class="eyebrow">CÔNG THỨC CỦA NOTEBOOK</p><div class="math-line">IDF(w) = log((N + 1) / (1 + df(w))) + 1</div><p>N là số tài liệu. df là số tài liệu chứa từ w; một tài liệu có từ đó 20 lần vẫn chỉ đóng góp 1 vào df.</p></div>
+            <div class="evidence-table"><span>Từ</span><span>df trong 4 tài liệu</span><span>IDF gần đúng</span><b>“và” có mọi nơi</b><strong>4</strong><strong>log(5/5)+1 = 1.000</strong><b>“mèo” có 2 nơi</b><strong>2</strong><strong>log(5/3)+1 ≈ 1.511</strong><b>“mận” có 1 nơi</b><strong>1</strong><strong>log(5/2)+1 ≈ 1.916</strong></div>
+            <div class="note-box"><b>Vì sao cộng 1?</b> Smoothing tránh mẫu số 0 và giữ IDF dương. Từ có ở mọi tài liệu nhận IDF=1; từ càng hiếm thì IDF càng lớn.</div>
+          </section>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">02</span><div><p class="eyebrow">CODE · DF RỒI IDF</p><h2>Đếm số tài liệu chứa từ</h2></div></div>
+            <pre class="code-block"><code>def compute_idf(processed_docs, vocabulary):
+    num_docs = len(processed_docs)
+    idf_vector = []
+    for word in vocabulary:
+        document_frequency = 0
+        for doc in processed_docs:
+            if word in doc:
+                document_frequency += 1
+        idf = np.log((num_docs + 1) /
+                     (1 + document_frequency)) + 1
+        idf_vector.append(idf)
+    return np.array(idf_vector)</code></pre>
+            <div class="line-notes"><p><code>num_docs</code> là N, số tài liệu.</p><p>Vòng ngoài đi qua từ; bộ đếm bắt đầu 0. Vòng trong hỏi “từ này có nằm trong tài liệu không?”. Tăng một lần cho mỗi tài liệu, không tăng theo số lần lặp từ trong tài liệu.</p><p><code>np.log</code> là log tự nhiên. Dấu ngoặc trong công thức quan trọng: smoothing ở cả tử và mẫu đúng như notebook.</p><p><code>return np.array</code> đổi list IDF thành vector có một số cho mỗi từ vựng.</p></div>
+            <div class="python-lab-list" data-lab-group="day5-idf"></div>
+          </section>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">03</span><div><p class="eyebrow">CODE · GHÉP MA TRẬN TF-IDF</p><h2>Nhân từng cột với IDF</h2></div></div>
+            <pre class="code-block"><code>def compute_tf_idf(docs):
+    processed_docs, vocabulary = create_corpus(docs)
+    tf_matrix = np.array([
+        compute_tf(doc, vocabulary)
+        for doc in processed_docs
+    ])
+    idf_vector = compute_idf(processed_docs, vocabulary)
+    tf_idf_matrix = tf_matrix * idf_vector
+    return tf_idf_matrix</code></pre>
+            <div class="line-notes"><p>processed_docs có N danh sách từ; vocabulary có V từ khác nhau.</p><p>Mỗi compute_tf trả V số; ghép N vector thành ma trận TF shape (N,V).</p><p>IDF có V số, một cho mỗi cột. NumPy nhân IDF vào mọi hàng theo đúng cột — gọi là broadcasting.</p><p>Kết quả vẫn shape (N,V). Mỗi hàng là tài liệu, mỗi cột là một từ cố định.</p></div>
+            <div class="example-panel"><div><p class="eyebrow">KIỂM TRA SHAPE</p><h3>2 tài liệu × 4 từ vựng</h3></div><ol class="transform-steps"><li><span>TF</span><code>(2, 4)</code></li><li><span>IDF</span><code>(4,)</code></li><li><span>TF×IDF</span><code>(2, 4)</code></li><li><span>mỗi ô</span><code>TF của từ × IDF của từ</code></li></ol><p class="fine-print">Nếu shape lệch, in shape từng biến trước khi sửa. Đây là lỗi kích thước, không phải lỗi “máy không hiểu ý”.</p></div>
+          </section>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">04</span><div><p class="eyebrow">COSINE SIMILARITY</p><h2>So hai vector theo hướng</h2></div></div>
+            <pre class="code-block"><code>def cosine_similarity(vec1, vec2):
+    dot_product = np.dot(vec1, vec2)
+    norm1 = np.linalg.norm(vec1)
+    norm2 = np.linalg.norm(vec2)
+    if norm1 * norm2 == 0:
+        return 0
+    return dot_product / (norm1 * norm2)</code></pre>
+            <div class="line-notes"><p><code>np.dot</code> nhân các vị trí tương ứng rồi cộng lại.</p><p><code>np.linalg.norm</code> tính độ dài vector: căn tổng bình phương.</p><p>Chia tích vô hướng cho hai độ dài để đo hướng, không để vector lớn hơn tự nhiên được điểm cao hơn.</p><p>Vector toàn 0 không có hướng. Nhánh if tránh chia cho 0 và trả 0 theo quy ước notebook.</p><p>Hai vector giống hệt nhau có cosine 1; vuông góc có 0. Với TF-IDF không âm, cosine thường từ 0 đến 1.</p></div>
+            <div class="python-lab-list" data-lab-group="day5-cosine"></div>
+          </section>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">05</span><div><p class="eyebrow">PLAGIARISM CHECKER</p><h2>So từng cặp và đọc ma trận</h2></div></div>
+            <pre class="code-block"><code>def check_plagiarism_all(docs):
+    tf_idf_matrix = compute_tf_idf(docs)
+    num_docs = len(docs)
+    similarity_matrix = np.zeros((num_docs, num_docs))
+    for i in range(num_docs):
+        for j in range(num_docs):
+            similarity_matrix[i, j] = cosine_similarity(
+                tf_idf_matrix[i], tf_idf_matrix[j]
+            )
+    return similarity_matrix</code></pre>
+            <div class="line-notes"><p><code>np.zeros((N,N))</code> tạo ma trận vuông lưu điểm giữa từng cặp.</p><p>i chọn tài liệu hàng, j chọn tài liệu cột; điểm được lưu đúng ô [i,j].</p><p>Đường chéo thường bằng 1 vì tài liệu so với chính nó. Ma trận đối xứng: điểm i,j bằng j,i.</p><p>Điểm cao là dấu hiệu hai văn bản dùng từ tương tự, không phải kết luận chắc chắn đạo văn. Cùng chủ đề cũng có thể tạo điểm cao.</p></div>
+            <pre class="code-block"><code>similarity_matrix = check_plagiarism_all(docs)
+sns.heatmap(
+    similarity_matrix,
+    annot=True,
+    fmt=".3f",
+    cmap="YlOrRd"
+)
+plt.show()</code></pre>
+            <div class="line-notes"><p><code>annot=True</code> ghi số vào ô; <code>fmt=".3f"</code> hiện 3 chữ số; cmap chọn màu.</p><p>Heatmap giúp phát hiện cặp cần xem. Trước khi kết luận, mở hai văn bản ứng với ô đậm.</p></div>
+            <div class="python-lab-list" data-lab-group="day5-plagiarism"></div>
+          </section>
+          <section class="practice-section"><div class="section-heading"><span class="section-index practice-index">✎</span><div><p class="eyebrow">TỰ VIẾT NOTEBOOK A</p><h2>Từ trang trắng đến heatmap</h2></div></div>
+            <div class="quiz" data-answer="c"><p class="quiz-question"><span>01</span> Nếu một từ xuất hiện ở cả N tài liệu, IDF theo công thức nguồn bằng bao nhiêu?</p><label><input type="radio" name="q10" value="a"> 0</label><label><input type="radio" name="q10" value="b"> N</label><label><input type="radio" name="q10" value="c"> 1</label><button class="check-answer" type="button">Kiểm tra</button><p class="feedback" aria-live="polite"></p></div>
+            <div class="write-practice"><div><p class="eyebrow">CHECKLIST NOTEBOOK 1</p><h3>Viết theo thứ tự phụ thuộc</h3><p>preprocess → create_corpus → compute_tf → compute_idf → compute_tf_idf → cosine_similarity → check_plagiarism_all → heatmap. Sau mỗi hàm, chạy ví dụ nhỏ và nhìn kiểu/shape.</p></div><textarea aria-label="Checklist tự dựng notebook plagiarism" placeholder="Tôi biết hàm nhận gì và trả gì..." rows="4"></textarea></div>
+            <div class="day-finish"><div><b>Buổi 4 đạt khi bạn có thể:</b><span>tự dựng ma trận đối xứng, giải thích đường chéo và hiển thị heatmap từ 4 tài liệu mới.</span></div><button class="complete-day" data-complete="5" data-session="4" type="button">Đánh dấu buổi 4 hoàn thành</button></div>
+            <div class="source-links"><a class="source-link" href="b4/Bai_4_TFIDF_va_Plagiarism.ipynb" download>Tải notebook thực hành ↗</a><a class="source-link" href="b4/Bai_4_TFIDF_va_Plagiarism.md" target="_blank" rel="noreferrer">Mở giáo án ↗</a></div>
+          </section>
+        </div>
+      </section>
+      <section class="day-panel" id="ngay-6" data-panel="6" data-upcoming="true" hidden>
+        <div class="day-hero hero-plum"><div class="hero-copy">
+          <p class="eyebrow">BUỔI 5 · THỨ NĂM, 05/11/2026 · 2–3 GIỜ</p>
+          <h1>Tự viết tìm kiếm<br>văn bản</h1>
+          <p class="hero-lede">Làm lại notebook retrieval: đọc bảng, fit TF-IDF một lần, mã hóa query, lấy cosine top-k và trả đúng văn bản.</p>
+          <div class="hero-tags"><span>pandas · scikit-learn</span><span>Hoàn thiện corr_search</span></div>
+        </div><div class="hero-art art-plum" aria-hidden="true"><span class="art-orbit orbit-one"></span><span class="art-orbit orbit-two"></span><span class="art-word">query<br><i>→ top-k</i></span><span class="art-chip chip-a">fit</span><span class="art-chip chip-b">rank</span><span class="art-chip chip-c">3</span></div></div>
+        <div class="lesson-body">
+          <div class="callout callout-plum"><span class="callout-icon">↗</span><p><b>Đích buổi 5:</b> tự dựng notebook TF-IDF retrieval từ dữ liệu nhỏ và hoàn thiện hàm corr_search còn để trống trong file gốc.</p></div>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">01</span><div><p class="eyebrow">PANDAS · BẢNG DỮ LIỆU</p><h2>Đọc một hàng và một cột</h2></div></div>
+            <p class="section-intro">DataFrame giống bảng tính: mỗi hàng là ví dụ, mỗi cột là trường. Notebook dùng text làm kho tài liệu và question làm truy vấn. Bắt đầu với dữ liệu nhỏ; khi hiểu rồi mới đọc CSV thật.</p>
+            <pre class="code-block"><code>import pandas as pd
+
+vi_data_df = pd.DataFrame({
+    "text": [
+        "TF-IDF giảm trọng số của từ phổ biến.",
+        "Cosine so sánh hướng của hai vector.",
+        "Vocabulary quyết định các cột trong vector."
+    ],
+    "question": [
+        "Từ phổ biến bị xử lý thế nào?",
+        "Đo hai vector gần nhau ra sao?",
+        "Mỗi vị trí số biểu diễn điều gì?"
+    ]
+})
+context = vi_data_df["text"].tolist()
+context = [doc.lower() for doc in context]</code></pre>
+            <div class="line-notes"><p><code>pd.DataFrame</code> tạo bảng; các list làm giá trị cho từng cột và phải có cùng số phần tử.</p><p><code>vi_data_df["text"]</code> chọn cột; <code>.tolist()</code> biến nó thành list Python cho vectorizer.</p><p>Khi có CSV thật, thay bảng minh họa bằng <code>pd.read_csv("vi_text_retrieval.csv")</code>. Đường dẫn phải đúng nơi đặt file.</p><p><code>iloc[0]</code> chọn hàng đầu tiên. Sau đó <code>["question"]</code> lấy ô câu hỏi của hàng đó.</p></div>
+            <div class="note-box note-caution"><b>CSV gốc chưa có trong thư mục b2.</b> Không cần internet để học thuật toán; bảng minh họa giúp ta chạy code trước. Sau khi pipeline đúng, thay bằng file thật.</div>
+          </section>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">02</span><div><p class="eyebrow">TF-IDF VỚI SCIKIT-LEARN</p><h2>fit trên tài liệu; transform câu hỏi</h2></div></div>
+            <pre class="code-block"><code>from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
+vectorizer = TfidfVectorizer()
+doc_matrix = vectorizer.fit_transform(context)
+
+question = vi_data_df.iloc[0]["question"].lower()
+query_vector = vectorizer.transform([question])
+scores = cosine_similarity(query_vector, doc_matrix).ravel()</code></pre>
+            <div class="line-notes"><p><code>fit_transform(context)</code> học vocabulary/IDF từ tài liệu rồi tạo ma trận số.</p><p><code>transform([question])</code> mã hóa query theo cùng các cột. Không fit lại query; như vậy query và document mới cùng không gian.</p><p>Sparse matrix tiết kiệm bộ nhớ. cosine_similarity nhận sparse trực tiếp; không cần toarray cho dữ liệu lớn.</p><p>scores có một điểm cho mỗi tài liệu. Chưa có văn bản; cần dùng ID để tra lại context.</p></div>
+            <div class="example-panel"><div><p class="eyebrow">SHAPE</p><h3>3 tài liệu, một query</h3></div><ol class="transform-steps"><li><span>doc_matrix</span><code>(3, số_từ_vựng)</code></li><li><span>query_vector</span><code>(1, số_từ_vựng)</code></li><li><span>scores</span><code>(3,)</code></li><li><span>top-k</span><code>chỉ số hàng xếp hạng</code></li></ol><p class="fine-print">Nếu scores toàn 0, query có thể không chứa term nào trong vocabulary. Khi ấy thứ tự trả về không phải đáp án.</p></div>
+          </section>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">03</span><div><p class="eyebrow">TỰ VIẾT HÀM SEARCH</p><h2>Giữ ID, điểm và văn bản đi cùng nhau</h2></div></div>
+            <pre class="code-block"><code>def tfidf_search(question, top_k=5):
+    query_vector = vectorizer.transform([question.lower()])
+    scores = cosine_similarity(query_vector, doc_matrix).ravel()
+    top_ids = np.argsort(scores)[::-1][:top_k]
+
+    results = []
+    for idx in top_ids:
+        results.append({
+            "id": int(idx),
+            "cosine_score": float(scores[idx]),
+            "text": context[idx]
+        })
+    return results</code></pre>
+            <div class="line-notes"><p>Hàm nhận câu hỏi và số kết quả; top_k mặc định là 5.</p><p><code>argsort</code> trả chỉ số theo điểm tăng; <code>[::-1]</code> đảo chiều; cắt top_k.</p><p>Trong vòng lặp, idx là hàng tài liệu. Dùng cùng idx lấy score và text để không ghép nhầm.</p><p>Notebook gốc gọi hàm corr_search nhưng phần thân vẫn dùng cosine_similarity. Đó là độ tương đồng cosine, không phải correlation Pearson.</p></div>
+            <pre class="code-block"><code>question = vi_data_df.iloc[0]["question"]
+results = tfidf_search(question, top_k=3)
+for item in results:
+    print(item["id"], round(item["cosine_score"], 3))
+    print(item["text"])</code></pre>
+            <div class="line-notes"><p>Vòng for đọc từng dict kết quả. ID cho biết hàng, text là đoạn cần đọc, score giải thích thứ tự.</p><p>Nếu cần giữ tên nguồn, đổi nhất quán cả định nghĩa và chỗ gọi: corr_search hoặc tfidf_search.</p></div>
+            <div class="python-lab-list" data-lab-group="day6-retrieval"></div>
+          </section>
+          <section class="lesson-section">
+            <div class="section-heading"><span class="section-index">04</span><div><p class="eyebrow">LỖI NGƯỜI MỚI THƯỜNG GẶP</p><h2>Code chạy được chưa chắc đã tìm đúng</h2></div></div>
+            <div class="evidence-table"><span>Triệu chứng</span><span>Nguyên nhân có thể</span><span>Cách kiểm tra</span><b>KeyError: question</b><strong>Tên cột CSV khác</strong><strong>In vi_data_df.columns</strong><b>Shape không khớp</b><strong>Query fit riêng vectorizer</strong><strong>Fit context; query chỉ transform</strong><b>Score toàn số 0</b><strong>Query ngoài vocabulary</strong><strong>In question và vocabulary</strong><b>Chỉ thấy ID</b><strong>Chưa tra context[idx]</strong><strong>In ID, text, score cùng nhau</strong></div>
+            <div class="note-box note-caution"><b>Top-k vẫn trả hàng nếu score bằng 0.</b> Hệ thống cố đưa ứng viên gần nhất, nhưng không có nghĩa query đã được trả lời. Hãy đọc nội dung và kiểm tra điểm.</div>
+          </section>
+          <section class="practice-section">
+            <div class="section-heading"><span class="section-index practice-index">✎</span><div><p class="eyebrow">TỰ VIẾT NOTEBOOK B · ĐÓNG LỜI GIẢI</p><h2>Từ trang trắng đến corr_search</h2></div></div>
+            <div class="quiz" data-answer="b"><p class="quiz-question"><span>01</span> Vì sao query phải dùng transform của vectorizer đã fit?</p><label><input type="radio" name="q11" value="a"> Để query có vocabulary riêng</label><label><input type="radio" name="q11" value="b"> Để query và tài liệu có cùng cột vector</label><label><input type="radio" name="q11" value="c"> Vì transform tự tải CSV</label><button class="check-answer" type="button">Kiểm tra</button><p class="feedback" aria-live="polite"></p></div>
+            <div class="write-practice"><div><p class="eyebrow">CHECKLIST NOTEBOOK 2</p><h3>Viết lại không nhìn bài</h3><p>Đọc bảng → lấy text → lowercase → fit_transform → lấy question → transform → cosine → argsort → trả ID, score và văn bản.</p></div><textarea aria-label="Checklist tự dựng notebook retrieval" placeholder="Tôi có thể giải thích từng biến và shape..." rows="4"></textarea></div>
+            <div class="rebuild-card"><p class="eyebrow">BÀI KIỂM TRA CUỐI 3 NGÀY</p><h3>Hai notebook, hai cách tự xác nhận</h3><ol><li>Notebook A: viết đủ preprocess, create_corpus, compute_tf, compute_idf, compute_tf_idf, cosine_similarity, check_plagiarism_all và heatmap từ file trắng.</li><li>Notebook B: tạo/đọc bảng, fit vectorizer trên context, hoàn thiện tìm kiếm và truy ra top-k câu.</li><li>Mỗi hàm giải thích được input, output và shape.</li><li>Đổi corpus/query mới; thử một câu có đáp án và một câu không có đáp án.</li></ol><p>Nếu phải nhìn lời giải ở một hàm, đó là phần cần luyện lại — không phải lý do kết luận bạn không học được.</p></div>
+            <div class="day-finish"><div><b>Buổi 5 đạt khi bạn có thể:</b><span>tự viết retrieval, hoàn thiện corr_search và giải thích vì sao top-k được trả về.</span></div><button class="complete-day" data-complete="6" data-session="5" type="button">Đánh dấu buổi 5 hoàn thành</button></div>
+            <div class="source-links"><a class="source-link" href="b5/Bai_5_TFIDF_Text_Retrieval.ipynb" download>Tải notebook thực hành ↗</a><a class="source-link" href="b5/Bai_5_TFIDF_Text_Retrieval.md" target="_blank" rel="noreferrer">Mở giáo án ↗</a></div>
+          </section>
+        </div>
+      </section>
+      <footer class="site-footer"><span class="brand-mark small-mark">N</span><p>Ba buổi mới đi từ Python căn bản đến hai notebook TF-IDF trong thư mục b2: kiểm tra đạo văn và tìm kiếm văn bản. Tiến độ được lưu trên trình duyệt của thiết bị bạn đang dùng.</p><a href="#ngay-4">Về buổi học mới ↑</a></footer>
     </main>
   </div>
 

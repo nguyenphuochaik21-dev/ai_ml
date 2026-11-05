@@ -1,6 +1,7 @@
 (() => {
   const panels = [...document.querySelectorAll('.day-panel')];
   const tabs = [...document.querySelectorAll('.day-tab')];
+  const upcomingDays = tabs.filter(tab => tab.dataset.upcoming === 'true').map(tab => Number(tab.dataset.day));
   const progressLabel = document.querySelector('#progress-label');
   const progressFill = document.querySelector('#progress-fill');
   const runtimePill = document.querySelector('#runtime-pill');
@@ -84,7 +85,7 @@
   function readProgress() {
     try {
       const value = JSON.parse(localStorage.getItem(progressKey) || '[]');
-      return Array.isArray(value) ? value.map(Number).filter(n => n >= 1 && n <= 3) : [];
+      return Array.isArray(value) ? value.map(Number).filter(n => n >= 1 && n <= panels.length) : [];
     } catch { return []; }
   }
 
@@ -94,19 +95,23 @@
 
   function renderProgress() {
     const completed = readProgress();
-    progressLabel.textContent = `${completed.length}/3 ngày hoàn thành`;
-    progressFill.style.width = `${completed.length / 3 * 100}%`;
+    const completedUpcoming = completed.filter(day => upcomingDays.includes(day));
+    progressLabel.textContent = completedUpcoming.length + '/' + upcomingDays.length + ' buổi mới hoàn thành';
+    progressFill.style.width = (completedUpcoming.length / upcomingDays.length * 100) + '%';
     tabs.forEach(tab => tab.classList.toggle('completed', completed.includes(Number(tab.dataset.day))));
     document.querySelectorAll('.complete-day').forEach(button => {
       const isDone = completed.includes(Number(button.dataset.complete));
       button.classList.toggle('completed', isDone);
-      button.textContent = isDone ? `✓ Đã hoàn thành ngày ${button.dataset.complete}` : `Đánh dấu ngày ${button.dataset.complete} hoàn thành`;
+      const label = button.dataset.session ? 'buổi ' + button.dataset.session : 'ngày ' + button.dataset.complete;
+      button.textContent = isDone ? '✓ Đã hoàn thành ' + label : 'Đánh dấu ' + label + ' hoàn thành';
       button.setAttribute('aria-pressed', String(isDone));
     });
   }
 
   function showDay(day, updateHash = true) {
-    const targetDay = Math.max(1, Math.min(3, Number(day) || 1));
+    const firstDay = Number(panels[0]?.dataset.panel) || 1;
+    const lastDay = Number(panels[panels.length - 1]?.dataset.panel) || firstDay;
+    const targetDay = Math.max(firstDay, Math.min(lastDay, Number(day) || firstDay));
     panels.forEach(panel => {
       const active = Number(panel.dataset.panel) === targetDay;
       panel.hidden = !active;
@@ -318,7 +323,8 @@
 
   document.querySelector('#dismiss-runtime-note')?.addEventListener('click', () => runtimeNotice?.remove());
   if (location.protocol === 'file:') setRuntimeStatus('Cần HTTPS để chạy', 'error');
-  const initialDay = Number((location.hash.match(/ngay-(\d)/) || [])[1]) || 1;
-  showDay(initialDay, false);
+  const requestedDay = Number((location.hash.match(/ngay-(\d+)/) || [])[1]) || 0;
+  const initialDay = requestedDay >= (upcomingDays[0] || 1) ? requestedDay : (upcomingDays[0] || 1);
+  showDay(initialDay, initialDay !== requestedDay);
   renderProgress();
 })();

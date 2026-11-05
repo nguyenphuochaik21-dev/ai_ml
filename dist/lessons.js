@@ -540,5 +540,370 @@ def predict(text):
 print(predict("free prize now"))`,
     expected: "spam",
     note: "Đây là ví dụ nhỏ để tự viết lại luồng. Nó cố ý không thay thế toàn bộ tiền xử lý/đánh giá của notebook 5.572 tin nhắn."
+  },
+  {
+    id: "manual-cosine-search", group: "day4-retrieval", level: "14 · EMBEDDING VÀ COSINE", title: "Tự xếp hạng vector bằng cosine",
+    problem: "Ta có một query vector và ba vector tài liệu đồ chơi. Hãy tính cosine, rồi trả các ID theo điểm giảm dần.",
+    why: "Semantic search gồm hai thao tác tách biệt: tạo vector bằng model và xếp hạng vector bằng metric. Bài này tập trung hiểu phần xếp hạng mà không cần tải model.",
+    input: "query = [1, 0]; doc d1=[1, 0], d2=[0.8, 0.6], d3=[0, 1].",
+    output: "d1 đứng trước d2, d2 đứng trước d3; cosine của d2 bằng 0.800.",
+    steps: [
+      ["dot(a, b)", "Nhân hai phần tử cùng vị trí rồi cộng lại; đây là tích vô hướng.", "Nếu cộng sai cặp phần tử, góc/vector similarity bị tính sai."],
+      ["norm(v)", "Độ dài vector là căn bậc hai của tổng bình phương từng phần tử.", "Nếu bỏ norm, vector dài hơn có thể được điểm cao chỉ vì độ lớn."],
+      ["dot / (norm × norm)", "Chuẩn hóa tích vô hướng thành cosine similarity.", "Nếu mẫu số bằng 0, phải trả giá trị an toàn thay vì chia cho 0."],
+      ["sorted(..., reverse=True)", "Sắp điểm cao trước và giữ ID đi cùng điểm.", "Nếu sắp riêng mảng ID và điểm, chúng sẽ không còn khớp nhau."]
+    ],
+    starter: `from math import sqrt
+
+ids = ["d1", "d2", "d3"]
+vectors = [[1.0, 0.0], [0.8, 0.6], [0.0, 1.0]]
+query = [1.0, 0.0]
+
+def dot(a, b):
+    total = 0.0
+    for i in range(len(a)):
+        # TODO: cộng tích của hai phần tử cùng vị trí
+        pass
+    return total
+
+def norm(vector):
+    # TODO: căn bậc hai của tổng bình phương
+    return 0.0
+
+def cosine(a, b):
+    denominator = norm(a) * norm(b)
+    if denominator == 0:
+        return 0.0
+    return dot(a, b) / denominator
+
+scored = [(ids[i], cosine(query, vectors[i])) for i in range(len(ids))]
+ranking = sorted(scored, key=lambda row: row[1], reverse=True)
+for doc_id, score in ranking:
+    print(doc_id, round(score, 3))`,
+    challenge: "Hoàn thiện dot và norm. Trước khi chạy, xác nhận d2 có dot=0.8 và norm=sqrt(0.8²+0.6²)=1, vì vậy cosine là 0.8.",
+    tests: `assert ranking[0][0] == "d1"
+assert ranking[1][0] == "d2"
+assert round(ranking[1][1], 3) == 0.8
+assert ranking[2][0] == "d3"`,
+    hint1: "Trong dot, tăng total bằng a[i] * b[i]. Trong norm, cộng v*v cho từng v rồi lấy sqrt.",
+    hint2: "Trả total từ dot; trả sqrt(sum(value * value for value in vector)) từ norm.",
+    solution: `from math import sqrt
+ids = ["d1", "d2", "d3"]
+vectors = [[1.0, 0.0], [0.8, 0.6], [0.0, 1.0]]
+query = [1.0, 0.0]
+def dot(a, b):
+    total = 0.0
+    for i in range(len(a)):
+        total += a[i] * b[i]
+    return total
+def norm(vector):
+    return sqrt(sum(value * value for value in vector))
+def cosine(a, b):
+    denominator = norm(a) * norm(b)
+    return dot(a, b) / denominator if denominator else 0.0
+scored = [(ids[i], cosine(query, vectors[i])) for i in range(len(ids))]
+ranking = sorted(scored, key=lambda row: row[1], reverse=True)
+for doc_id, score in ranking:
+    print(doc_id, round(score, 3))`,
+    expected: "d1 1.0\nd2 0.8\nd3 0.0",
+    note: "Vector được tạo thủ công để luyện metric. Embedding model thật mới biến câu thành vector; lab chỉ mô phỏng bước so sánh."
+  },
+  {
+    id: "mini-vector-store", group: "day5-vectordb", level: "15 · BẢN GHI VÀ FILTER", title: "Mô phỏng collection nhỏ",
+    problem: "Lưu đoạn văn cùng ID/vector/metadata, cập nhật bằng upsert, rồi tìm top-k trong một topic.",
+    why: "Bản mô phỏng giúp ta hiểu cấu trúc dữ liệu trước khi gọi Chroma. Vector database thật còn lo persistence và index lân cận.",
+    input: "Ba bản ghi đồ chơi với vector 2 chiều và metadata topic.",
+    output: "Query topic=retrieval trả f1 trước f2; bản ghi topic khác bị loại.",
+    steps: [
+      ["store[doc_id] = record", "ID là khóa để tìm/cập nhật đúng một bản ghi; record gom document, vector và metadata.", "Nếu chỉ append list, upsert khó tìm và thay đúng ID cũ."],
+      ["where topic", "Filter kiểm tra metadata trước khi đưa vector vào ranking.", "Nếu filter sau khi lấy top-k, kết quả đúng ở hạng k+1 có thể bị mất."],
+      ["cosine distance", "Chuyển similarity thành distance = 1 - similarity; distance nhỏ hơn thì gần hơn.", "Nếu xếp giảm dần distance, đoạn xa nhất sẽ đứng đầu."],
+      ["sorted(... )[:k]", "Chỉ sau filter và tính distance mới lấy k hàng gần nhất.", "Nếu cắt danh sách trước khi sort, top-k không còn đúng."]
+    ],
+    starter: `from math import sqrt
+
+store = {}
+
+def upsert(doc_id, document, vector, metadata):
+    # TODO: ghi một dict gồm document, vector, metadata vào store[doc_id]
+    pass
+
+def cosine_distance(a, b):
+    dot = sum(x * y for x, y in zip(a, b))
+    norm_a = sqrt(sum(x * x for x in a))
+    norm_b = sqrt(sum(y * y for y in b))
+    if norm_a * norm_b == 0:
+        return 1.0
+    return 1.0 - dot / (norm_a * norm_b)
+
+def query(query_vector, topic=None, k=2):
+    results = []
+    for doc_id, record in store.items():
+        if topic is not None and record["metadata"].get("topic") != topic:
+            continue
+        distance = cosine_distance(query_vector, record["vector"])
+        results.append((doc_id, distance, record["document"]))
+    return sorted(results, key=lambda row: row[1])[:k]
+
+upsert("f1", "Cosine distance nhỏ hơn là gần hơn.", [1.0, 0.0], {"topic": "retrieval"})
+upsert("f2", "Embedding biến câu thành vector.", [0.8, 0.6], {"topic": "retrieval"})
+upsert("f3", "Naive Bayes phân loại email.", [0.0, 1.0], {"topic": "classification"})
+print(query([1.0, 0.0], topic="retrieval"))`,
+    challenge: "Hoàn thiện upsert rồi thử query không filter và query có topic=classification. Cập nhật f1 bằng upsert lần nữa; số ID trong store phải vẫn là 3.",
+    tests: `assert len(store) == 3, "Upsert cùng ID không được tạo bản ghi mới"
+assert query([1.0, 0.0], topic="retrieval")[0][0] == "f1"
+assert all(row[0] != "f3" for row in query([1.0, 0.0], topic="retrieval"))`,
+    hint1: "upsert chỉ cần gán store[doc_id] bằng một dict có ba key document, vector, metadata.",
+    hint2: "Dùng record = {\"document\": document, \"vector\": vector, \"metadata\": metadata} rồi gán vào store[doc_id].",
+    solution: `from math import sqrt
+store = {}
+def upsert(doc_id, document, vector, metadata):
+    store[doc_id] = {
+        "document": document,
+        "vector": vector,
+        "metadata": metadata
+    }
+def cosine_distance(a, b):
+    dot = sum(x * y for x, y in zip(a, b))
+    norm_a = sqrt(sum(x * x for x in a))
+    norm_b = sqrt(sum(y * y for y in b))
+    if norm_a * norm_b == 0:
+        return 1.0
+    return 1.0 - dot / (norm_a * norm_b)
+def query(query_vector, topic=None, k=2):
+    results = []
+    for doc_id, record in store.items():
+        if topic is not None and record["metadata"].get("topic") != topic:
+            continue
+        distance = cosine_distance(query_vector, record["vector"])
+        results.append((doc_id, distance, record["document"]))
+    return sorted(results, key=lambda row: row[1])[:k]
+upsert("f1", "Cosine distance nhỏ hơn là gần hơn.", [1.0, 0.0], {"topic": "retrieval"})
+upsert("f2", "Embedding biến câu thành vector.", [0.8, 0.6], {"topic": "retrieval"})
+upsert("f3", "Naive Bayes phân loại email.", [0.0, 1.0], {"topic": "classification"})
+print(query([1.0, 0.0], topic="retrieval"))`,
+    expected: "f1 có distance 0; f2 có distance khoảng 0.2; f3 bị loại khi lọc topic=retrieval.",
+    note: "Đây là mô phỏng Python thuần, không ghi xuống đĩa và không có ANN index. Notebook buổi 4 dùng chromadb.PersistentClient thật."
+  },
+  {
+    id: "retrieval-metrics", group: "day6-evaluation", level: "16 · PRECISION RECALL MRR", title: "Tự tính ba metric retrieval",
+    problem: "Với ranking [d3, d1, d2, d4] và relevant={d1,d4}, tính P@3, Recall@3 và reciprocal rank.",
+    why: "Tự viết metric giúp phân biệt mẫu số của precision/recall và thấy vị trí của kết quả đầu tiên tác động đến MRR ra sao.",
+    input: "Ranking có thứ tự; tập relevant là các ID đã gán nhãn đúng.",
+    output: "P@3=0.333..., Recall@3=0.5, RR=0.5.",
+    steps: [
+      ["ranking[:k]", "Chỉ lấy ba kết quả đầu để tính precision/recall@3.", "Nếu lỡ dùng toàn ranking, metric @k không còn giới hạn ở k."],
+      ["hits / k", "Precision chia số hit trong top-k cho số slot k.", "Chia cho số tài liệu relevant sẽ ra recall thay vì precision."],
+      ["hits / len(relevant)", "Recall chia hit cho tổng đáp án liên quan đã biết.", "Chia cho k sẽ ra precision."],
+      ["1 / rank", "Reciprocal rank dùng hạng của hit đầu tiên; không có hit thì bằng 0.", "Dùng rank 0 gây chia cho 0; enumerate nên bắt đầu từ 1."]
+    ],
+    starter: `ranking = ["d3", "d1", "d2", "d4"]
+relevant = {"d1", "d4"}
+k = 3
+
+def precision_at_k(ranking, relevant, k):
+    # TODO: số relevant trong top-k chia cho k
+    return 0.0
+
+def recall_at_k(ranking, relevant, k):
+    # TODO: số relevant trong top-k chia cho tổng relevant
+    return 0.0
+
+def reciprocal_rank(ranking, relevant):
+    # TODO: trả 1/rank của hit đầu tiên, nếu không có thì trả 0
+    return 0.0
+
+print(round(precision_at_k(ranking, relevant, k), 3))
+print(round(recall_at_k(ranking, relevant, k), 3))
+print(round(reciprocal_rank(ranking, relevant), 3))`,
+    challenge: "Sửa ranking thành [d3, d2, d4, d1]. Precision@3 và Recall@3 sẽ thế nào? MRR đổi ra sao?",
+    tests: `assert round(precision_at_k(ranking, relevant, k), 3) == 0.333
+assert round(recall_at_k(ranking, relevant, k), 3) == 0.5
+assert round(reciprocal_rank(ranking, relevant), 3) == 0.5
+assert reciprocal_rank(["d2", "d3"], {"d1"}) == 0`,
+    hint1: "Tạo top_k = ranking[:k]. hits là số doc_id nằm trong relevant.",
+    hint2: "RR dùng enumerate(ranking, start=1); gặp relevant thì return 1/rank; hết vòng lặp thì return 0.",
+    solution: `ranking = ["d3", "d1", "d2", "d4"]
+relevant = {"d1", "d4"}
+k = 3
+def precision_at_k(ranking, relevant, k):
+    top_k = ranking[:k]
+    hits = sum(doc_id in relevant for doc_id in top_k)
+    return hits / k if k else 0.0
+def recall_at_k(ranking, relevant, k):
+    if not relevant:
+        return 0.0
+    top_k = ranking[:k]
+    hits = sum(doc_id in relevant for doc_id in top_k)
+    return hits / len(relevant)
+def reciprocal_rank(ranking, relevant):
+    for rank, doc_id in enumerate(ranking, start=1):
+        if doc_id in relevant:
+            return 1 / rank
+    return 0.0
+print(round(precision_at_k(ranking, relevant, k), 3))
+print(round(recall_at_k(ranking, relevant, k), 3))
+print(round(reciprocal_rank(ranking, relevant), 3))`,
+    expected: "0.333\n0.5\n0.5"
+  },
+  {
+    id: "rrf-fusion-lab", group: "day6-evaluation", level: "17 · RECIPROCAL RANK FUSION", title: "Hợp nhất hai danh sách bằng RRF",
+    problem: "TF-IDF và dense search cho hai ranking khác nhau. Tính điểm RRF và tìm thứ hạng kết hợp.",
+    why: "Điểm TF-IDF và cosine không cùng thang. Dùng rank để hợp nhất giúp tránh cộng trực tiếp hai loại điểm.",
+    input: "lexical=[d1,d2,d3], dense=[d3,d1,d4].",
+    output: "d1 và d3 cùng có thứ hạng cao; với c=60, d1 nhỉnh hơn d3.",
+    steps: [
+      ["enumerate(ranking, start=1)", "Gán vị trí 1, 2, 3 cho từng ID.", "Rank bắt đầu từ 0 làm thay đổi công thức và tăng điểm quá mức."],
+      ["1 / (c + rank)", "Đổi vị trí thành điểm; hạng cao đóng góp lớn hơn.", "Cộng điểm gốc của hai retriever sẽ trộn thang số không tương thích."],
+      ["cộng vào scores[id]", "Một ID có mặt ở cả hai danh sách sẽ nhận đóng góp từ cả hai.", "Nếu ghi đè, mất phiếu của hệ thống đầu."],
+      ["sort giảm dần", "Xếp ID theo tổng điểm RRF.", "Sắp tăng dần sẽ đưa điểm thấp lên đầu."]
+    ],
+    starter: `lexical = ["d1", "d2", "d3"]
+dense = ["d3", "d1", "d4"]
+
+def rrf(rankings, c=60):
+    scores = {}
+    for ranking in rankings:
+        for rank, doc_id in enumerate(ranking, start=1):
+            # TODO: cộng 1/(c+rank) vào điểm hiện tại của doc_id
+            pass
+    return sorted(scores, key=scores.get, reverse=True), scores
+
+ranking, scores = rrf([lexical, dense])
+print(ranking)
+print(round(scores["d1"], 5), round(scores["d3"], 5))`,
+    challenge: "Đổi c thành 0 rồi quan sát hạng. Sau đó bỏ d1 khỏi dense và xem tài liệu nào được RRF ưu tiên.",
+    tests: `assert ranking[0] == "d1"
+assert round(scores["d1"], 5) == 0.03252
+assert round(scores["d3"], 5) == 0.03227
+assert set(ranking) == {"d1", "d2", "d3", "d4"}`,
+    hint1: "Ở mỗi vòng, scores[doc_id] bằng điểm cũ cộng 1/(c+rank). Dùng scores.get(doc_id, 0.0).",
+    hint2: "scores[doc_id] = scores.get(doc_id, 0.0) + 1.0 / (c + rank)",
+    solution: `lexical = ["d1", "d2", "d3"]
+dense = ["d3", "d1", "d4"]
+def rrf(rankings, c=60):
+    scores = {}
+    for ranking in rankings:
+        for rank, doc_id in enumerate(ranking, start=1):
+            scores[doc_id] = scores.get(doc_id, 0.0) + 1.0 / (c + rank)
+    return sorted(scores, key=scores.get, reverse=True), scores
+ranking, scores = rrf([lexical, dense])
+print(ranking)
+print(round(scores["d1"], 5), round(scores["d3"], 5))`,
+    expected: "d1 đứng đầu; score d1≈0.03252, score d3≈0.03227."
+  },
+  {
+    id: "tfidf-preprocess", group: "day4-foundations", level: "BUỔI 3 · TỪ CÂU ĐẾN CORPUS", title: "Chuẩn hóa câu và gom vocabulary",
+    problem: "Trước khi đếm TF, mọi câu phải được tách từ và dùng chung một danh sách cột.",
+    why: "Nếu mỗi câu tự tạo cột riêng, con số ở cùng vị trí có thể chỉ các từ khác nhau. Vocabulary chung giữ nghĩa của vector ổn định.",
+    input: "Hai câu tiếng Việt ngắn.", output: "List từ đã chuẩn hóa và vocabulary không trùng, được sắp xếp.",
+    steps: [
+      ["text.lower()", "Đưa chữ hoa về chữ thường để cùng một từ không bị xem thành hai từ.", "Nếu bỏ qua, Mèo và mèo có thể thành hai cột."],
+      ["text.split()", "Tách chuỗi tại khoảng trắng thành list từ.", "Không tách thì không thể đếm riêng từng từ."],
+      ["set.add(word)", "Thêm từ vào vùng chứa không cho phép bản trùng.", "Dùng list thường sẽ có cột lặp lại."],
+      ["sorted(vocabulary_set)", "Cố định thứ tự cột để các vector có thể so sánh.", "Thứ tự không ổn định làm sai nghĩa từng vị trí."]
+    ],
+    starter: ["docs = ['Mèo ăn cá', 'Chó ăn cá']", "", "def preprocess(text):", "    # TODO: chữ thường rồi tách khoảng trắng", "    pass", "", "def create_corpus(docs):", "    processed_docs = []", "    vocabulary_set = set()", "    for text in docs:", "        words = preprocess(text)", "        processed_docs.append(words)", "        for word in words:", "            vocabulary_set.add(word)", "    return processed_docs, sorted(vocabulary_set)", "", "processed_docs, vocabulary = create_corpus(docs)", "print(processed_docs)", "print(vocabulary)"].join("\n"),
+    challenge: "Thêm câu thứ ba có từ mới. Đoán vocabulary trước khi chạy rồi so lại.",
+    tests: "assert processed_docs[0] == [\"mèo\", \"ăn\", \"cá\"]\nassert vocabulary == [\"ăn\", \"cá\", \"chó\", \"mèo\"]",
+    hint1: "Hàm preprocess cần trả về kết quả của text.lower().split().",
+    hint2: "Trong preprocess, tạo biến words = text.lower().split() rồi return words.",
+    solution: ["docs = ['Mèo ăn cá', 'Chó ăn cá']", "def preprocess(text):", "    return text.lower().split()", "def create_corpus(docs):", "    processed_docs = []", "    vocabulary_set = set()", "    for text in docs:", "        words = preprocess(text)", "        processed_docs.append(words)", "        for word in words:", "            vocabulary_set.add(word)", "    return processed_docs, sorted(vocabulary_set)", "processed_docs, vocabulary = create_corpus(docs)", "print(processed_docs)", "print(vocabulary)"].join("\n"),
+    expected: "Vocabulary: ['ăn', 'cá', 'chó', 'mèo']."
+  },
+  {
+    id: "tf-count", group: "day4-tf", level: "BUỔI 3 · TERM FREQUENCY", title: "Đổi số đếm thành tỷ lệ TF",
+    problem: "Một vector TF cần một ô cho mỗi từ trong vocabulary, kể cả từ không xuất hiện.",
+    why: "TF chuẩn hóa tần suất theo độ dài tài liệu; vector có cùng thứ tự cột để ngày mai nhân với IDF.",
+    input: "Một list từ và vocabulary đã sắp xếp.", output: "Với mèo ăn cá mèo, TF là [0.25, 0.25, 0.0, 0.5].",
+    steps: [
+      ["word_count.get(word, 0) + 1", "Đếm số lần xuất hiện; get bắt đầu từ 0 cho từ mới.", "Nếu chỉ gán bằng 1 thì từ lặp bị đếm thiếu."],
+      ["len(word_list)", "Tổng số từ là mẫu số để đổi số đếm thành tỷ lệ.", "Bỏ mẫu số sẽ trả số đếm thô thay vì TF."],
+      ["for word in vocabulary", "Tạo số theo đúng thứ tự cột chung.", "Đi theo thứ tự câu làm lệch cột giữa tài liệu."],
+      ["if total_words == 0", "Tài liệu rỗng cần tránh phép chia cho 0.", "Chia cho 0 gây lỗi hoặc giá trị không hợp lệ."]
+    ],
+    starter: ["import numpy as np", "word_list = ['mèo', 'ăn', 'cá', 'mèo']", "vocabulary = ['ăn', 'cá', 'chó', 'mèo']", "", "def compute_tf(word_list, vocabulary):", "    word_count = {}", "    for word in word_list:", "        # TODO: tăng bộ đếm", "        pass", "    total_words = len(word_list)", "    tf_vector = []", "    for word in vocabulary:", "        count = word_count.get(word, 0)", "        # TODO: thêm count / total_words; nếu rỗng thì thêm 0", "        pass", "    return np.array(tf_vector)", "", "print(compute_tf(word_list, vocabulary))"].join("\n"),
+    challenge: "Thử list rỗng và xác nhận vector có bốn số 0, không báo chia cho 0.",
+    tests: "vector = compute_tf(word_list, vocabulary)\nassert np.allclose(vector, [0.25, 0.25, 0.0, 0.5])\nassert np.allclose(compute_tf([], vocabulary), [0, 0, 0, 0])",
+    hint1: "Dùng word_count.get(word, 0) + 1 khi gặp mỗi từ.",
+    hint2: "Trong vòng vocabulary, thêm count / total_words nếu total_words khác 0; nếu không thêm 0.",
+    solution: ["import numpy as np", "word_list = ['mèo', 'ăn', 'cá', 'mèo']", "vocabulary = ['ăn', 'cá', 'chó', 'mèo']", "def compute_tf(word_list, vocabulary):", "    word_count = {}", "    for word in word_list:", "        word_count[word] = word_count.get(word, 0) + 1", "    total_words = len(word_list)", "    tf_vector = []", "    for word in vocabulary:", "        count = word_count.get(word, 0)", "        tf_vector.append(count / total_words if total_words else 0)", "    return np.array(tf_vector)", "print(compute_tf(word_list, vocabulary))"].join("\n"),
+    expected: "[0.25 0.25 0.   0.5 ]"
+  },
+  {
+    id: "smoothed-idf", group: "day5-idf", level: "BUỔI 4 · INVERSE DOCUMENT FREQUENCY", title: "Đếm tài liệu có từ và tính IDF",
+    problem: "Từ có ở mọi tài liệu ít giúp phân biệt; từ hiếm hữu ích hơn.",
+    why: "IDF nhìn toàn corpus. Ta đếm số tài liệu chứa từ, không đếm số lần lặp trong một tài liệu.",
+    input: "Ba tài liệu token hóa và vocabulary chung.", output: "Từ có df=1 nhận IDF cao hơn từ có df=3.",
+    steps: [
+      ["num_docs = len(processed_docs)", "N là số tài liệu trong corpus.", "Dùng số từ thay N sẽ làm sai công thức."],
+      ["if word in doc", "Mỗi tài liệu chỉ đóng góp tối đa một vào document frequency.", "Đếm mọi lần lặp sẽ phóng đại df."],
+      ["np.log((N+1)/(df+1))+1", "Công thức làm trơn được dùng trong notebook gốc.", "Bỏ phần cộng 1 có thể tạo phép chia cho 0."],
+      ["np.array(idf_values)", "Trả vector IDF theo đúng thứ tự vocabulary.", "Thứ tự khác sẽ nhân trọng số vào cột sai."]
+    ],
+    starter: ["import numpy as np", "processed_docs = [['mèo', 'ăn', 'mèo'], ['chó', 'ăn'], ['cá', 'ăn']]", "vocabulary = ['ăn', 'cá', 'chó', 'mèo']", "", "def compute_idf(processed_docs, vocabulary):", "    num_docs = len(processed_docs)", "    idf_values = []", "    for word in vocabulary:", "        document_frequency = 0", "        for doc in processed_docs:", "            # TODO: tăng df nếu tài liệu có từ này", "            pass", "        idf = np.log((num_docs + 1) / (document_frequency + 1)) + 1", "        idf_values.append(idf)", "    return np.array(idf_values)", "", "print(np.round(compute_idf(processed_docs, vocabulary), 3))"].join("\n"),
+    challenge: "Từ ăn xuất hiện ba tài liệu nhưng lặp không được tính thêm trong cùng tài liệu. So IDF của ăn và mèo.",
+    tests: "idf = compute_idf(processed_docs, vocabulary)\nassert np.isclose(idf[0], 1.0)\nassert idf[3] > idf[0]",
+    hint1: "Trong vòng lặp từng doc, kiểm tra điều kiện word in doc.",
+    hint2: "Nếu word in doc đúng, document_frequency += 1.",
+    solution: ["import numpy as np", "processed_docs = [['mèo', 'ăn', 'mèo'], ['chó', 'ăn'], ['cá', 'ăn']]", "vocabulary = ['ăn', 'cá', 'chó', 'mèo']", "def compute_idf(processed_docs, vocabulary):", "    num_docs = len(processed_docs)", "    idf_values = []", "    for word in vocabulary:", "        document_frequency = 0", "        for doc in processed_docs:", "            if word in doc:", "                document_frequency += 1", "        idf = np.log((num_docs + 1) / (document_frequency + 1)) + 1", "        idf_values.append(idf)", "    return np.array(idf_values)", "print(np.round(compute_idf(processed_docs, vocabulary), 3))"].join("\n"),
+    expected: "Từ ăn có IDF 1.0; từ mèo có IDF lớn hơn."
+  },
+  {
+    id: "cosine-vectors", group: "day5-cosine", level: "BUỔI 4 · COSINE", title: "So hướng hai vector",
+    problem: "Ta cần điểm tương đồng không tự tăng chỉ vì một vector dài hơn.",
+    why: "Cosine chia tích vô hướng cho độ dài hai vector. Trước khi chia, phải xử lý vector toàn 0.",
+    input: "Hai cặp vector số.", output: "Cùng hướng cho 1; vuông góc cho 0.",
+    steps: [
+      ["np.dot(a, b)", "Nhân từng vị trí rồi cộng thành tích vô hướng.", "So từng con số riêng sẽ không cho một điểm chung."],
+      ["np.linalg.norm(a)", "Tính độ dài vector.", "Không chuẩn hóa khiến vector dài tự có tích lớn."],
+      ["norm == 0", "Vector 0 không có hướng và không thể chia.", "Bỏ nhánh này dẫn đến phép chia cho 0."],
+      ["dot / (norm_a * norm_b)", "Chuẩn hóa tích vô hướng thành cosine.", "Đảo tử/mẫu cho ra công thức sai."]
+    ],
+    starter: ["import numpy as np", "def cosine_similarity(vec_a, vec_b):", "    # TODO: tính tích vô hướng và hai độ dài", "    dot_product = 0", "    norm_a = 0", "    norm_b = 0", "    # TODO: nếu một độ dài bằng 0, trả 0.0", "    return 0.0", "", "print(cosine_similarity(np.array([1, 0]), np.array([1, 0])))", "print(cosine_similarity(np.array([1, 0]), np.array([0, 1])))"],
+    challenge: "Thử thêm vector [0, 0]. Hàm phải trả 0.0 và không báo lỗi.",
+    tests: "assert np.isclose(cosine_similarity(np.array([1, 0]), np.array([1, 0])), 1.0)\nassert np.isclose(cosine_similarity(np.array([1, 0]), np.array([0, 1])), 0.0)\nassert cosine_similarity(np.array([0, 0]), np.array([1, 0])) == 0.0",
+    hint1: "Tính độ dài bằng np.linalg.norm(vec_a), còn tích vô hướng bằng np.dot(vec_a, vec_b).",
+    hint2: "Nếu norm_a == 0 or norm_b == 0 thì return 0.0; nếu không return dot_product / (norm_a * norm_b).",
+    solution: ["import numpy as np", "def cosine_similarity(vec_a, vec_b):", "    dot_product = np.dot(vec_a, vec_b)", "    norm_a = np.linalg.norm(vec_a)", "    norm_b = np.linalg.norm(vec_b)", "    if norm_a == 0 or norm_b == 0:", "        return 0.0", "    return dot_product / (norm_a * norm_b)", "print(cosine_similarity(np.array([1, 0]), np.array([1, 0])))", "print(cosine_similarity(np.array([1, 0]), np.array([0, 1])))"],
+    expected: "1.0 rồi 0.0"
+  },
+  {
+    id: "pairwise-similarity", group: "day5-plagiarism", level: "BUỔI 4 · MA TRẬN ĐẠO VĂN", title: "Lưu điểm của tất cả cặp",
+    problem: "Với N tài liệu, cần xem điểm của từng cặp trong ma trận N×N.",
+    why: "Vòng lặp lồng nhau chọn tài liệu hàng và cột. Ma trận đối xứng, đường chéo so tài liệu với chính nó.",
+    input: "Ba vector TF-IDF nhỏ.", output: "Ma trận 3×3 đối xứng với đường chéo bằng 1.",
+    steps: [
+      ["np.zeros((n, n))", "Tạo sẵn chỗ chứa điểm cho mọi cặp.", "Thiếu một chiều sẽ không lưu được hàng và cột."],
+      ["for i ... for j ...", "Xét lần lượt từng cặp có thứ tự.", "Chỉ chạy một vòng thì nhiều ô không được điền."],
+      ["matrix[i, j] = cosine(...)", "Ghi điểm vào ô đúng hàng/cột.", "Ghi nhầm i và j làm lẫn cặp tài liệu."],
+      ["heatmap(..., annot=True)", "Hiển thị cả màu lẫn con số.", "Chỉ nhìn màu khó biết giá trị cụ thể."]
+    ],
+    starter: ["import numpy as np", "vectors = np.array([[1.0, 0.0], [1.0, 0.0], [0.0, 1.0]])", "", "def cosine_similarity(a, b):", "    denominator = np.linalg.norm(a) * np.linalg.norm(b)", "    return float(np.dot(a, b) / denominator) if denominator else 0.0", "", "n = len(vectors)", "similarity_matrix = np.zeros((n, n))", "for i in range(n):", "    for j in range(n):", "        # TODO: ghi cosine của vectors[i] và vectors[j]", "        pass", "", "print(similarity_matrix)"],
+    challenge: "Vẽ ma trận bằng seaborn. Thêm nhãn tài liệu 0, 1, 2 và đọc ô [0, 2].",
+    tests: "assert similarity_matrix.shape == (3, 3)\nassert np.allclose(similarity_matrix, similarity_matrix.T)\nassert np.allclose(np.diag(similarity_matrix), [1, 1, 1])",
+    hint1: "Trong vòng lặp, gán vào similarity_matrix[i, j].",
+    hint2: "Dòng cần điền là similarity_matrix[i, j] = cosine_similarity(vectors[i], vectors[j]).",
+    solution: ["import numpy as np", "vectors = np.array([[1.0, 0.0], [1.0, 0.0], [0.0, 1.0]])", "def cosine_similarity(a, b):", "    denominator = np.linalg.norm(a) * np.linalg.norm(b)", "    return float(np.dot(a, b) / denominator) if denominator else 0.0", "n = len(vectors)", "similarity_matrix = np.zeros((n, n))", "for i in range(n):", "    for j in range(n):", "        similarity_matrix[i, j] = cosine_similarity(vectors[i], vectors[j])", "print(similarity_matrix)"],
+    expected: "Shape (3, 3); hai tài liệu giống vector có điểm 1; ma trận đối xứng."
+  },
+  {
+    id: "fit-query-topk", group: "day6-retrieval", level: "BUỔI 5 · TEXT RETRIEVAL", title: "Fit tài liệu, tìm top-k câu",
+    problem: "Tìm các đoạn văn gần với câu hỏi và trả lại cả ID, điểm, nội dung.",
+    why: "Tài liệu và query phải dùng chung vectorizer để các cột vector có cùng nghĩa.",
+    input: "Ba đoạn text và một câu hỏi.", output: "Các ID có cosine cao nhất đứng trước.",
+    steps: [
+      ["fit_transform(context)", "Học vocabulary/IDF từ tài liệu và tạo ma trận tài liệu.", "Fit riêng từng câu làm không gian cột khác nhau."],
+      ["transform([question])", "Mã hóa query theo các cột đã học.", "Dùng fit_transform cho query sẽ học vocabulary khác."],
+      ["cosine_similarity(...).ravel()", "So một query với mọi tài liệu, rồi làm phẳng điểm.", "Bỏ ravel thì kết quả vẫn có thêm một chiều."],
+      ["argsort(scores)[::-1][:k]", "Lấy chỉ số k điểm cao nhất trước.", "Quên đảo chiều sẽ lấy điểm thấp trước."]
+    ],
+    starter: ["import numpy as np", "from sklearn.feature_extraction.text import TfidfVectorizer", "from sklearn.metrics.pairwise import cosine_similarity", "context = ['tf idf weighs common words', 'cosine compares vector direction', 'python functions group steps']", "vectorizer = TfidfVectorizer()", "doc_matrix = vectorizer.fit_transform(context)", "question = 'cosine compares vectors'", "# TODO: transform query; tính scores; xếp top 2", "print(scores)", "print(top_ids)"],
+    challenge: "Đổi câu hỏi thành một câu không có từ nào trong context. Quan sát điểm và giải thích vì sao top-k không chắc là câu trả lời.",
+    tests: "assert len(top_ids) == 2\nassert int(top_ids[0]) == 1\nassert scores.shape == (3,)",
+    hint1: "Tạo query_vector bằng vectorizer.transform([question]); sau đó cosine_similarity(query_vector, doc_matrix).ravel().",
+    hint2: "top_ids = np.argsort(scores)[::-1][:2]",
+    solution: ["import numpy as np", "from sklearn.feature_extraction.text import TfidfVectorizer", "from sklearn.metrics.pairwise import cosine_similarity", "context = ['tf idf weighs common words', 'cosine compares vector direction', 'python functions group steps']", "vectorizer = TfidfVectorizer()", "doc_matrix = vectorizer.fit_transform(context)", "question = 'cosine compares vectors'", "query_vector = vectorizer.transform([question])", "scores = cosine_similarity(query_vector, doc_matrix).ravel()", "top_ids = np.argsort(scores)[::-1][:2]", "print(scores)", "print(top_ids)"],
+    expected: "ID 1 đứng đầu vì tài liệu đó nói về cosine và vector."
   }
 ];
